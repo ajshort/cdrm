@@ -1,0 +1,32 @@
+# The joint model group name to generate.
+string group_name
+
+# The number of vertices in the roadmap.
+uint32 roadmap_size
+
+# Number of nearest neighbours to connect to.
+uint32 roadmap_k
+
+# The workspace mapping resolution.
+float64 resolution
+
+# Whether to generate colliding edges.
+bool collide_edges
+
+# Whether to voxelise or ignore tip links.
+bool collide_tip_link
+
+# The distance (in m) that the tip must be able to extend forwards from a configuration for it to be added to the
+# CDRM. This is to support situations where a motion is to be planned to a near-contact position, and then extended
+# along the +Z direction to make contact.
+float64 approach_distance
+---
+# The min and max distance from the model group origin to a contact.
+float64 min_contact_distance
+float64 max_contact_distance
+
+# The bounds of the group's workspace.
+geometry_msgs/Vector3 workspace_min
+geometry_msgs/Vector3 workspace_max
+---
+float64 progress

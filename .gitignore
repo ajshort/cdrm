@@ -1,0 +1,8 @@
+.vscode/
+
+*~
+*.pyc
+*.pyd
+*.user
+
+CATKIN_IGNORE
