@@ -3,27 +3,30 @@ project(cdrm)
 
 add_compile_options(-std=c++11)
 
+find_package(Boost REQUIRED COMPONENTS graph)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   cdrm_msgs
   moveit_ros_planning
   roscpp
 )
+find_package(ompl REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES cdrm
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS})
 
 add_library(cdrm
   src/cdrm.cpp
+  src/generator.cpp
 )
 
 add_dependencies(cdrm ${cdrm_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(cdrm ${catkin_LIBRARIES})
+target_link_libraries(cdrm ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OMPL_LIBRARIES})
 
 install(TARGETS cdrm
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

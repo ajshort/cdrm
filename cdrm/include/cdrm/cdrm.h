@@ -1,7 +1,6 @@
 #pragma once
 
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_traits.hpp>
+#include <cdrm/roadmap.h>
 
 #include <Eigen/Core>
 
@@ -10,15 +9,10 @@
 
 namespace cdrm
 {
-struct VertexData
-{
-  Eigen::VectorXd q_;
-};
-
 /**
- * A C-space roadmap of configuration vertices and edges.
+ * A key which corresponds to a CDRM W-space cell.
  */
-using Roadmap = boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, VertexData>;
+using Key = std::array<std::int16_t, 3>;
 
 /**
  * The main Contact Dynamic Roadmap (CDRM) data structure.
@@ -26,10 +20,6 @@ using Roadmap = boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirecti
 class Cdrm
 {
 public:
-  using Key = std::array<std::int16_t, 3>;
-  using Vertex = boost::graph_traits<Roadmap>::vertex_descriptor;
-  using Edge = boost::graph_traits<Roadmap>::edge_descriptor;
-
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   Cdrm(double resolution = 0.01);
