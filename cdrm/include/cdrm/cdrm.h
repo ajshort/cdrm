@@ -5,7 +5,7 @@
 #include <Eigen/Core>
 
 #include <array>
-#include <map>
+#include <unordered_map>
 
 namespace cdrm
 {
@@ -24,15 +24,18 @@ public:
 
   Cdrm(double resolution = 0.01);
 
+  Key pointToKey(const Eigen::Vector3d &p) const;
+  Eigen::Vector3d keyToPoint(const Key &k) const;
+
   bool save(const std::string &filename) const;
   bool load(const std::string &filename);
 
   double resolution_;
   Roadmap roadmap_;
 
-  std::multimap<Key, Vertex> colliding_vertices_;
-  std::multimap<Key, Edge> colliding_edges_;
-  std::multimap<Key, Vertex> contacts_;
+  std::multimap<Key, VertexDescriptor> colliding_vertices_;
+  std::multimap<Key, EdgeDescriptor> colliding_edges_;
+  std::multimap<Key, VertexDescriptor> contacts_;
 
   Eigen::Vector3d workspace_min_ = Eigen::Vector3d::Constant(std::numeric_limits<double>::max());
   Eigen::Vector3d workspace_max_ = Eigen::Vector3d::Constant(std::numeric_limits<double>::lowest());
