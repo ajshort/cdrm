@@ -6,6 +6,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   cdrm
   cdrm_msgs
+  cdrm_welding_msgs
   roscpp
 )
 

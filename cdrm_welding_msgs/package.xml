@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>cdrm_welding_msgs</name>
+  <version>0.0.0</version>
+  <description>The cdrm_welding_msgs package</description>
+  <maintainer email="andrewjshort@gmail.com">Andrew Short</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+</package>

@@ -5,13 +5,13 @@ string robot_group_name
 string robot_positioner_group_name
 
 # The planning timeout in seconds.
-double planning_timeout
+float64 planning_timeout
 
 # Points along the path which make the weld.
 geometry_msgs/Point[] weld_points
 
 # Unit vector directions indicating the nominal wire direction.
-geometry_msgs/Vector3d[] weld_directions
+geometry_msgs/Vector3[] weld_directions
 
 ---
 
@@ -19,7 +19,7 @@ geometry_msgs/Vector3d[] weld_directions
 bool success
 
 # Planning time taken.
-double planning_time
+float64 planning_time
 
 # The robot trajectory to weld to part.
 trajectory_msgs/JointTrajectory robot_trajectory
