@@ -1,0 +1,25 @@
+# The group name which controls the robot.
+string robot_group_name
+
+# Optional group name for the robot positioner (track).
+string robot_positioner_group_name
+
+# The planning timeout in seconds.
+double planning_timeout
+
+# Points along the path which make the weld.
+geometry_msgs/Point[] weld_points
+
+# Unit vector directions indicating the nominal wire direction.
+geometry_msgs/Vector3d[] weld_directions
+
+---
+
+# Whether a plan was succesfully generated.
+bool success
+
+# Planning time taken.
+double planning_time
+
+# The robot trajectory to weld to part.
+trajectory_msgs/JointTrajectory robot_trajectory

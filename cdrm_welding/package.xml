@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>cdrm_welding</name>
+  <version>0.0.0</version>
+  <description>The cdrm_welding package</description>
+  <maintainer email="andrewjshort@gmail.com">Andrew Short</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cdrm</build_depend>
+  <build_depend>cdrm_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_export_depend>cdrm</build_export_depend>
+  <build_export_depend>cdrm_msgs</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <exec_depend>cdrm</exec_depend>
+  <exec_depend>cdrm_msgs</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+</package>
