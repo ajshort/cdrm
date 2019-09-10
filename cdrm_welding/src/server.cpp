@@ -11,22 +11,20 @@ public:
   Server(const moveit::core::RobotModelConstPtr &robot_model)
     : nh_("~")
     , robot_model_(robot_model)
-    , plan_server_(nh_, "plan_weld", std::bind(&Server::planWeld, this, std::placeholders::_1), false)
+    , plan_service_(nh_.advertiseService("plan_weld", &Server::planWeld, this))
   {
-    plan_server_.start();
   }
 
 private:
-  void planWeld(const cdrm_welding_msgs::PlanWeldGoalConstPtr &goal)
+  bool planWeld(cdrm_welding_msgs::PlanWeld::Request &req,
+                cdrm_welding_msgs::PlanWeld::Response &res)
   {
+    return false;
   }
 
   ros::NodeHandle nh_;
   moveit::core::RobotModelConstPtr robot_model_;
-
-  actionlib::SimpleActionServer<cdrm_welding_msgs::PlanWeldAction> plan_server_;
-  cdrm_welding_msgs::PlanWeldFeedback plan_feedback_;
-  cdrm_welding_msgs::PlanWeldResult plan_result_;
+  ros::ServiceServer plan_service_;
 };
 }
 
