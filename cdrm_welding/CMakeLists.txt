@@ -17,6 +17,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 add_executable(cdrm_welding
   src/server.cpp
+  src/weld_planner.cpp
 )
 
 add_dependencies(cdrm_welding ${cdrm_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

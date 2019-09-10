@@ -13,6 +13,12 @@ geometry_msgs/Point[] weld_points
 # Unit vector directions indicating the nominal wire direction.
 geometry_msgs/Vector3[] weld_directions
 
+# Weld range parameters
+cdrm_welding_msgs/Interval rx_range
+cdrm_welding_msgs/Interval ry_range
+cdrm_welding_msgs/Interval rz_range
+cdrm_welding_msgs/Interval ctwd_range
+
 ---
 
 # Whether a plan was succesfully generated.

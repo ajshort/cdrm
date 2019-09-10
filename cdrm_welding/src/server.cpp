@@ -1,3 +1,5 @@
+#include <cdrm_welding/weld_planner.h>
+
 #include <cdrm_welding_msgs/PlanWeld.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -19,7 +21,7 @@ private:
   bool planWeld(cdrm_welding_msgs::PlanWeld::Request &req,
                 cdrm_welding_msgs::PlanWeld::Response &res)
   {
-    return false;
+    return WeldPlanner(robot_model_).plan(req, res);
   }
 
   ros::NodeHandle nh_;
