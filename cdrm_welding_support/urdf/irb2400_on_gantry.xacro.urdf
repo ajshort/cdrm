@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<robot name="irb_2400_on_gantry" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find abb_irb2400_support)/urdf/irb2400_macro.xacro" />
+
+  <link name="base_link" />
+
+  <xacro:abb_irb2400 prefix="robot_" />
+
+  <joint name="base_robot_link" type="fixed">
+    <parent link="base_link" />
+    <child link="robot_base_link" />
+  </joint>
+</robot>
