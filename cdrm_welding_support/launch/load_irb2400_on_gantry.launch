@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<launch>
-  <param
-    name="robot_description"
-    command="$(find xacro)/xacro '$(find cdrm_welding_support)/urdf/irb2400_on_gantry.xacro.urdf'"
-  />
-</launch>

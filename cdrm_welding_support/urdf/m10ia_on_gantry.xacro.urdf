@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<robot name="m10ia_on_gantry" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find fanuc_m10ia_support)/urdf/m10ia_macro.xacro" />
+
+  <link name="base_link" />
+
+  <link name="carriage_link">
+  </link>
+
+  <joint name="track_joint" type="prismatic">
+    <parent link="base_link" />
+    <child link="carriage_link" />
+    <limit lower="0" upper="10" velocity="1" effort="0" />
+    <axis xyz="1 0 0" />
+  </joint>
+
+  <link name="boom_link_1">
+  </link>
+
+  <link name="boom_link_2">
+  </link>
+
+  <joint name="boom_joint_1" type="prismatic">
+    <parent link="carriage_link" />
+    <child link="boom_link_1" />
+    <limit lower="0" upper="2" velocity="0.5" effort="0" />
+    <axis xyz="0 1 0" />
+  </joint>
+
+  <joint name="boom_joint_2" type="prismatic">
+    <parent link="boom_link_1" />
+    <child link="boom_link_2" />
+    <limit lower="-1" upper="0" velocity="0.5" effort="0" />
+    <origin xyz="0 0 2.5" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <xacro:fanuc_m10ia prefix="robot_" />
+
+  <joint name="boom_robot_joint" type="fixed">
+    <parent link="boom_link_2" />
+    <child link="robot_base_link" />
+    <origin rpy="${pi} 0 0" />
+  </joint>
+
+  <link name="torch_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://cdrm_welding_support/meshes/visual/torch_link.stl" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="robot_torch_joint" type="fixed">
+    <parent link="robot_tool0" />
+    <child link="torch_link" />
+  </joint>
+
+  <link name="tcp_link">
+  </link>
+
+  <joint name="torch_tcp_joint" type="fixed">
+    <parent link="torch_link" />
+    <child link="tcp_link" />
+    <origin xyz="0.02775225 0 0.21053771" rpy="0 ${radians(55)} 0" />
+  </joint>
+</robot>
