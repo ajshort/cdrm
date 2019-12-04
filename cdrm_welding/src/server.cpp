@@ -24,6 +24,11 @@ private:
     return WeldPlanner(robot_model_).plan(req, res);
   }
 
+  bool generateWeldingCdrm(cdrm_welding_msgs::GenerateWeldingCdrm::Request &req,
+                           cdrm_welding_msgs::GenerateWeldingCdrm::Response &res)
+  {
+  }
+
   ros::NodeHandle nh_;
   moveit::core::RobotModelConstPtr robot_model_;
   ros::ServiceServer plan_service_;
