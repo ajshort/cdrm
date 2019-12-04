@@ -1,5 +1,6 @@
 #include <cdrm_welding/weld_planner.h>
 
+#include <cdrm_welding_msgs/GenerateWeldingCdrmAction.h>
 #include <cdrm_welding_msgs/PlanWeld.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
@@ -13,20 +14,20 @@ public:
   Server(const moveit::core::RobotModelConstPtr &robot_model)
     : nh_("~")
     , robot_model_(robot_model)
+    , generate_server_(nh_, "generate_welding_cdrm", std::bind(&Server::generateWeldingCdrm, this, std::placeholders::_1), false)
     , plan_service_(nh_.advertiseService("plan_weld", &Server::planWeld, this))
   {
   }
 
 private:
+  void generateWeldingCdrm(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal)
+  {
+  }
+
   bool planWeld(cdrm_welding_msgs::PlanWeld::Request &req,
                 cdrm_welding_msgs::PlanWeld::Response &res)
   {
     return WeldPlanner(robot_model_).plan(req, res);
-  }
-
-  bool generateWeldingCdrm(cdrm_welding_msgs::GenerateWeldingCdrm::Request &req,
-                           cdrm_welding_msgs::GenerateWeldingCdrm::Response &res)
-  {
   }
 
   ros::NodeHandle nh_;
