@@ -1,5 +1,6 @@
 #include <cdrm_welding/weld_planner.h>
 
+#include <actionlib/server/simple_action_server.h>
 #include <cdrm_welding_msgs/GenerateWeldingCdrmAction.h>
 #include <cdrm_welding_msgs/PlanWeld.h>
 #include <moveit/robot_model/robot_model.h>
@@ -32,6 +33,9 @@ private:
 
   ros::NodeHandle nh_;
   moveit::core::RobotModelConstPtr robot_model_;
+  actionlib::SimpleActionServer<cdrm_welding_msgs::GenerateWeldingCdrmAction> generate_server_;
+  cdrm_welding_msgs::GenerateWeldingCdrmFeedback generate_feedback_;
+  cdrm_welding_msgs::GenerateWeldingCdrmResult generate_result_;
   ros::ServiceServer plan_service_;
 };
 }

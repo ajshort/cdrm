@@ -28,5 +28,8 @@ float64 max_contact_distance
 # The bounds of the group's workspace.
 geometry_msgs/Vector3 workspace_min
 geometry_msgs/Vector3 workspace_max
+
+# The time taken in seconds to generate.
+float64 generation_time
 ---
 float64 progress
