@@ -86,9 +86,23 @@
     </visual>
   </link>
 
+  <link name="nozzle_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://cdrm_welding_support/meshes/visual/nozzle_link.stl" />
+      </geometry>
+      <material name="gray" />
+    </visual>
+  </link>
+
   <joint name="robot_torch_joint" type="fixed">
     <parent link="robot_tool0" />
     <child link="torch_link" />
+  </joint>
+
+  <joint name="torch_nozzle_link" type="fixed">
+    <parent link="torch_link" />
+    <child link="nozzle_link" />
   </joint>
 
   <link name="tcp_link">
@@ -97,6 +111,6 @@
   <joint name="torch_tcp_joint" type="fixed">
     <parent link="torch_link" />
     <child link="tcp_link" />
-    <origin xyz="0.02775225 0 0.21053771" rpy="0 ${radians(55)} 0" />
+    <origin xyz="0.05636777 0 0.23057450" rpy="0 ${radians(55)} 0" />
   </joint>
 </robot>
