@@ -1,6 +1,7 @@
 #include <cdrm_welding/weld_planner.h>
 
 #include <actionlib/server/simple_action_server.h>
+#include <cdrm_welding/welding_cdrm_generator.h>
 #include <cdrm_welding_msgs/GenerateWeldingCdrmAction.h>
 #include <cdrm_welding_msgs/PlanWeld.h>
 #include <moveit/robot_model/robot_model.h>
@@ -23,6 +24,7 @@ public:
 private:
   void generateWeldingCdrm(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal)
   {
+    WeldingCdrmGenerator(robot_model_, generate_feedback_, generate_result_).generate(goal);
   }
 
   bool planWeld(cdrm_welding_msgs::PlanWeld::Request &req,

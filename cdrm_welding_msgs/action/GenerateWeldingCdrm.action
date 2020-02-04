@@ -1,9 +1,17 @@
+# The location to save the welding CDRM to.
+string filename
+
 # The joint model group name to generate.
 string group_name
 
-# The TCP and flange link. Note for generation we treat the flange as the contact point.
+# The TCP link name.
 string tcp_link_name
+
+# The name of the flange link.
 string flange_link_name
+
+# The group of links which make up the nozzle.
+string nozzle_group_name
 
 # The number of vertices in the roadmap.
 uint32 roadmap_size
@@ -11,13 +19,13 @@ uint32 roadmap_size
 # Number of nearest neighbours to connect to.
 uint32 roadmap_k
 
-# The workspace mapping resolution.
-float64 resolution
-
 # The ranges for each parameter to generate.
 cdrm_welding_msgs/Interval rx
 cdrm_welding_msgs/Interval ry
 cdrm_welding_msgs/Interval ctwd
+
+# The resolution in mm for nozzle CDRM.
+float64 nozzle_resolution
 
 ---
 # The min and max distance from the model group origin to a contact.
