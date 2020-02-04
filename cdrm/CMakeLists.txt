@@ -3,11 +3,12 @@ project(cdrm)
 
 add_compile_options(-std=c++11)
 
-find_package(Boost REQUIRED COMPONENTS graph)
+find_package(Boost REQUIRED COMPONENTS graph serialization)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   cdrm_msgs
   eigen_conversions
+  moveit_core
   moveit_ros_planning
   roscpp
 )

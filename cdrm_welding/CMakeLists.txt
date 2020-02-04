@@ -7,22 +7,26 @@ find_package(catkin REQUIRED COMPONENTS
   cdrm
   cdrm_msgs
   cdrm_welding_msgs
+  moveit_core
+  moveit_ros_planning
   roscpp
 )
+find_package(ompl REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 catkin_package()
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS})
 
 add_executable(cdrm_welding
   src/server.cpp
   src/weld_planner.cpp
+  src/welding_cdrm_generator.cpp
 )
 
 add_dependencies(cdrm_welding ${cdrm_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(cdrm_welding ${catkin_LIBRARIES})
+target_link_libraries(cdrm_welding ${catkin_LIBRARIES} ${OMPL_LIBRARIES})
 
 install(TARGETS cdrm_welding
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
