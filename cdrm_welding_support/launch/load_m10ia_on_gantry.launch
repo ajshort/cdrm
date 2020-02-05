@@ -9,4 +9,8 @@
     name="robot_description_semantic"
     command="$(find xacro)/xacro '$(find cdrm_welding_support)/srdf/m10ia_on_gantry.xacro.srdf'"
   />
+
+  <group ns="robot_description_kinematics">
+    <rosparam command="load" file="$(find cdrm_welding_support)/config/kinematics.yaml"/>
+  </group>
 </launch>

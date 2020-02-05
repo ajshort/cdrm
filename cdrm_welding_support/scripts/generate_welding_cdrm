@@ -6,7 +6,7 @@ rostopic pub cdrm_welding_server/generate_welding_cdrm/goal cdrm_welding_msgs/Ge
     group_name: robot_with_gantry, \
     tcp_link_name: tcp_link, \
     flange_link_name: robot_tool0, \
-    nozzle_group_name: nozzle_group, \
+    nozzle_group_name: nozzle, \
     roadmap_size: 10000, \
     roadmap_k: 10, \
     rx: { min: -0.261799, max: 0.261799 }, \
