@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+rostopic pub cdrm_welding_server/generate_welding_cdrm/goal cdrm_welding_msgs/GenerateWeldingCdrmActionGoal "{ \
+  goal: { \
+    filename: '~/.ros/welding-cdrm', \
+    group_name: robot_with_gantry, \
+    tcp_link_name: tcp_link, \
+    flange_link_name: robot_tool0, \
+    nozzle_group_name: nozzle_group, \
+    roadmap_size: 10000, \
+    roadmap_k: 10, \
+    rx: { min: -0.261799, max: 0.261799 }, \
+    ry: { min: -0.610865, max: 0.610865 }, \
+    ctwd: { min: 0, max: 0.01 }, \
+    nozzle_resolution: 0.001 \
+  } \
+}"

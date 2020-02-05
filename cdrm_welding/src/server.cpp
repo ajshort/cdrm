@@ -19,6 +19,7 @@ public:
     , generate_server_(nh_, "generate_welding_cdrm", std::bind(&Server::generateWeldingCdrm, this, std::placeholders::_1), false)
     , plan_service_(nh_.advertiseService("plan_weld", &Server::planWeld, this))
   {
+    generate_server_.start();
   }
 
 private:
