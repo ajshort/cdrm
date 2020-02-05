@@ -4,4 +4,9 @@
     name="robot_description"
     command="$(find xacro)/xacro '$(find cdrm_welding_support)/urdf/m10ia_on_gantry.xacro.urdf'"
   />
+
+  <param
+    name="robot_description_semantic"
+    command="$(find xacro)/xacro '$(find cdrm_welding_support)/srdf/m10ia_on_gantry.xacro.srdf'"
+  />
 </launch>
