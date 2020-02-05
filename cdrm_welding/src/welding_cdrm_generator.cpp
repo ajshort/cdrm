@@ -90,5 +90,6 @@ void WeldingCdrmGenerator::generateNozzleCdrm()
 
 bool WeldingCdrmGenerator::isNozzleStateValid(const ompl::base::State *state) const
 {
+  return true;
 }
 }
