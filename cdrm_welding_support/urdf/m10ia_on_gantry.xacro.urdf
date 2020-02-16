@@ -71,7 +71,7 @@
 
   <xacro:fanuc_m10ia prefix="robot_" />
 
-  <joint name="carriange_robot_joint" type="fixed">
+  <joint name="carriage_robot_joint" type="fixed">
     <parent link="carriage_link_3" />
     <child link="robot_base_link" />
     <origin rpy="${pi} 0 0" />
@@ -84,6 +84,11 @@
       </geometry>
       <material name="gray" />
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://cdrm_welding_support/meshes/visual/torch_link.stl" />
+      </geometry>
+    </collision>
   </link>
 
   <link name="nozzle_link">
@@ -93,6 +98,11 @@
       </geometry>
       <material name="gray" />
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://cdrm_welding_support/meshes/visual/nozzle_link.stl" />
+      </geometry>
+    </collision>
   </link>
 
   <joint name="robot_torch_joint" type="fixed">

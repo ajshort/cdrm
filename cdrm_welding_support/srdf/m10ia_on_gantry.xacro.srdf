@@ -4,7 +4,10 @@
     <chain base_link="robot_base_link" tip_link="robot_tool0" />
   </group>
 
-  <group name="nozzle">
+  <group name="welding_torch">
+    <link name="torch_link" />
     <link name="nozzle_link" />
   </group>
+
+  <end_effector name="welding_torch" parent_link="robot_tool0" group="welding_torch" parent_group="manipulator" />
 </robot>

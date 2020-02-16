@@ -3,6 +3,7 @@ project(cdrm_welding)
 
 add_compile_options(-std=c++11)
 
+find_package(Boost REQUIRED COMPONENTS graph serialization)
 find_package(catkin REQUIRED COMPONENTS
   cdrm
   cdrm_msgs
@@ -16,7 +17,7 @@ find_package(Eigen3 REQUIRED)
 
 catkin_package()
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS})
+include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS})
 
 add_executable(cdrm_welding_server
   src/server.cpp
@@ -26,7 +27,7 @@ add_executable(cdrm_welding_server
 
 add_dependencies(cdrm_welding_server ${cdrm_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(cdrm_welding_server ${catkin_LIBRARIES} ${OMPL_LIBRARIES})
+target_link_libraries(cdrm_welding_server ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OMPL_LIBRARIES})
 
 install(TARGETS cdrm_welding_server
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

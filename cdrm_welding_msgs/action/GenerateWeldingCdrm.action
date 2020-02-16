@@ -4,14 +4,11 @@ string filename
 # The joint model group name to generate.
 string group_name
 
-# The TCP link name.
-string tcp_link_name
+# The group which makes up the end effector.
+string end_effector_name
 
-# The name of the flange link.
-string flange_link_name
-
-# The group of links which make up the nozzle.
-string nozzle_group_name
+# The name of the nozzle link.
+string nozzle_link_name
 
 # The number of vertices in the roadmap.
 uint32 roadmap_size

@@ -25,7 +25,8 @@ public:
 private:
   void generateWeldingCdrm(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal)
   {
-    WeldingCdrmGenerator(robot_model_, generate_feedback_, generate_result_).generate(goal);
+    WeldingCdrmGenerator generator(robot_model_, generate_feedback_, generate_result_);
+    generator.generate(goal, [this] { return generate_server_.isPreemptRequested(); });
   }
 
   bool planWeld(cdrm_welding_msgs::PlanWeld::Request &req,
