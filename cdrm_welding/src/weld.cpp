@@ -26,9 +26,9 @@ Eigen::Isometry3d Weld::getTargetTransform(std::size_t i) const
 
   // X points along the weld.
   if (i == positions_.size() - 1)
-    tf.linear.col(0) = (positions_[i] - positions_[i - 1]).normalized();
+    tf.linear().col(0) = (positions_[i] - positions_[i - 1]).normalized();
   else
-    tf.linear.col(0) = (positions_[i + 1] - positions_[i]).normalized();
+    tf.linear().col(0) = (positions_[i + 1] - positions_[i]).normalized();
 
   // Z points in the weld direction.
   tf.linear().col(2) = directions_[i];
