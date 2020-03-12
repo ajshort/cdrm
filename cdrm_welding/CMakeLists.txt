@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   cdrm
   cdrm_msgs
   cdrm_welding_msgs
+  eigen_conversions
   moveit_core
   moveit_ros_planning
   roscpp
@@ -21,6 +22,7 @@ include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${EIGEN
 
 add_executable(cdrm_welding_server
   src/server.cpp
+  src/weld.cpp
   src/weld_planner.cpp
   src/welding_cdrm_generator.cpp
 )

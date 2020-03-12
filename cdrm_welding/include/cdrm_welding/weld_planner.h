@@ -2,6 +2,7 @@
 
 #include <cdrm_welding_msgs/PlanWeld.h>
 #include <moveit/macros/class_forward.h>
+#include <ros/publisher.h>
 
 namespace moveit
 {
@@ -19,11 +20,13 @@ namespace cdrm_welding
 class WeldPlanner
 {
 public:
-  explicit WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model);
+  WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
+              const ros::Publisher &target_publisher);
 
   bool plan(cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_msgs::PlanWeld::Response &res);
 
 private:
   moveit::core::RobotModelConstPtr robot_model_;
+  ros::Publisher target_publisher_;
 };
 }
