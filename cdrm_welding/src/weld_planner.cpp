@@ -10,6 +10,8 @@
 #include <ros/time.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <iostream>
+
 namespace cdrm_welding
 {
 WeldPlanner::WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
@@ -24,6 +26,18 @@ bool WeldPlanner::plan(cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_m
   ros::Time limit_time = start_time + ros::Duration(req.planning_timeout);
 
   ROS_DEBUG("Received weld planning request");
+
+  if (!(nozzle_link_ = robot_model_->getLinkModel(req.nozzle_link_name)))
+  {
+    ROS_ERROR("Could not find the nozzle link '%s'", req.nozzle_link_name.c_str());
+    return false;
+  }
+
+  if (!(workpiece_link_ = robot_model_->getLinkModel(req.workpiece_link_name)))
+  {
+    ROS_ERROR("Could not find the workpiece link '%s'", req.workpiece_link_name.c_str());
+    return false;
+  }
 
   // Create weld from the targets.
   Weld weld;
@@ -53,26 +67,33 @@ bool WeldPlanner::plan(cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_m
   state.setToDefaultValues();
 
   // Voxelise around the toolpath every 5mm in its local frame.
-  const int steps = static_cast<int>(std::ceil(weld.getLength() / 5.0));
+  cdrm::Cdrm nozzle_cdrm(0.001);
 
-  std::vector<std::set<cdrm::Key>> nozzle_voxelised;
-  nozzle_voxelised.reserve(steps + 1);
+  const int steps = static_cast<int>(std::ceil(weld.getLength() / 0.005));
+
+  std::vector<std::set<cdrm::Key>> nozzle_voxelised(steps + 1);
 
   for (int step = 0; step <= steps; ++step)
   {
     const double t = static_cast<double>(step) / steps;
-    const Eigen::Isometry3d tf = weld.getTransform(t);
+    const Eigen::Isometry3d &workpiece_tf = state.getGlobalLinkTransform(workpiece_link_);
+    const Eigen::Isometry3d weld_tf = workpiece_tf * weld.getTransform(t);
 
-    // cdrm::voxelise(
-    //   state,
-    //   links,
-    //   0.001,
-    //   [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
-    //   },
-    //   tf,
-    //   min,
-    //   max
-    // );
+    // We voxelise 100mm around the nozzle (TODO this should be read from the nozzle CDRM size).
+    Eigen::Vector3d min_bound(-0.1, -0.1, -0.1);
+    Eigen::Vector3d max_bound(0.1, 0.1, 0.1);
+
+    cdrm::voxelise(
+      state,
+      std::vector<const moveit::core::LinkModel *>({ workpiece_link_ }),
+      nozzle_cdrm.resolution_,
+      [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
+        nozzle_voxelised[step].insert(nozzle_cdrm.pointToKey(p));
+      },
+      weld_tf.inverse(),
+      &min_bound,
+      &max_bound
+    );
   }
 
   // Get the CDRM for the toolpath and filter it.

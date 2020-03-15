@@ -4,6 +4,12 @@ string robot_group_name
 # Optional group name for the robot positioner (track).
 string robot_positioner_group_name
 
+# The name of the nozzle link (must be syummetrical around Z).
+string nozzle_link_name
+
+# The name of the workpiece link (with attached collision meshes).
+string workpiece_link_name
+
 # The planning timeout in seconds.
 float64 planning_timeout
 
