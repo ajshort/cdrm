@@ -35,5 +35,6 @@ void voxelise(const shapes::Mesh &mesh, double resolution, const VoxelCallback &
  */
 void voxelise(const moveit::core::RobotState &state, const std::vector<const moveit::core::LinkModel *> &links,
               double resolution, const VoxelCallback &callback,
-              const Eigen::Isometry3d &tf = Eigen::Isometry3d::Identity());
+              const Eigen::Isometry3d &tf = Eigen::Isometry3d::Identity(),
+              const Eigen::Vector3d *min_bound = nullptr, const Eigen::Vector3d *max_bound = nullptr);
 }

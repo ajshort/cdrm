@@ -202,7 +202,8 @@ void voxelise(const shapes::Mesh &mesh, double resolution, const VoxelCallback &
 }
 
 void voxelise(const moveit::core::RobotState &state, const std::vector<const moveit::core::LinkModel *> &links,
-              double resolution, const VoxelCallback &callback, const Eigen::Isometry3d &tf)
+              double resolution, const VoxelCallback &callback, const Eigen::Isometry3d &tf,
+              const Eigen::Vector3d *min_bound, const Eigen::Vector3d *max_bound)
 {
   for (const auto *link : links)
   {
@@ -216,7 +217,10 @@ void voxelise(const moveit::core::RobotState &state, const std::vector<const mov
       const auto *shape = shapes[i].get();
 
       if (shape->type == shapes::MESH)
-        voxelise(*static_cast<const shapes::Mesh *>(shape), resolution, callback, tf * link_tf * shape_tfs[i]);
+      {
+        const auto *mesh = static_cast<const shapes::Mesh *>(shape);
+        voxelise(*mesh, resolution, callback, tf * link_tf * shape_tfs[i], min_bound, max_bound);
+      }
     }
   }
 }
