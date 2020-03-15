@@ -28,6 +28,7 @@ add_executable(cdrm_welding_server
   src/server.cpp
   src/weld.cpp
   src/weld_planner.cpp
+  src/welding_cdrm.cpp
   src/welding_cdrm_generator.cpp
 )
 

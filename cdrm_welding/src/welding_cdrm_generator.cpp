@@ -1,5 +1,7 @@
 #include <cdrm_welding/welding_cdrm_generator.h>
 
+#include <cdrm_welding/welding_cdrm.h>
+
 #include <cdrm/cdrm.h>
 #include <cdrm/cdrm_serialisation.h>
 #include <cdrm/voxelise.h>
@@ -15,6 +17,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -39,23 +42,17 @@ void WeldingCdrmGenerator::generate(const cdrm_welding_msgs::GenerateWeldingCdrm
                                     const CancelledFn &is_cancelled)
 {
   goal_ = goal;
+  cdrm_ = std::unique_ptr<WeldingCdrm>(new WeldingCdrm);
+
+  ROS_INFO("Generating welding CDRM");
 
   generateNozzleCdrm(is_cancelled);
 
   // Save the information.
   ROS_INFO("Saving welding CDRM to '%s'...", goal->filename.c_str());
 
-  try
-  {
-    std::ofstream ofs(goal->filename.c_str());
-    boost::archive::binary_oarchive oa(ofs);
-    oa << *nozzle_cdrm_;
-  }
-  catch (const boost::archive::archive_exception &ex)
-  {
-    ROS_ERROR("%s", ex.what());
+  if (!cdrm_->save(goal->filename))
     return;
-  }
 
   ROS_INFO("Finished generating welding CDRM");
 }
@@ -95,7 +92,7 @@ void WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
 
   ROS_INFO("Generating CDRM for nozzle...");
 
-  nozzle_cdrm_.reset(new cdrm::Cdrm(goal_->nozzle_resolution));
+  cdrm_->nozzle_cdrm_ = cdrm::Cdrm(goal_->nozzle_resolution);
 
   ob::StateSpacePtr state_space(new ob::RealVectorStateSpace);
   state_space->as<ob::RealVectorStateSpace>()->addDimension("rx", goal_->rx.min, goal_->rx.max);
@@ -166,6 +163,8 @@ static void applyNozzleConfigurationToState(moveit::core::RobotState &state,
 
 cdrm::VertexDescriptor WeldingCdrmGenerator::addNozzleVertex(const ob::State *s)
 {
+  auto &nozzle_cdrm = cdrm_->nozzle_cdrm_;
+
   Eigen::VectorXd config(3);
 
   for (int i = 0; i < 3; ++i)
@@ -179,24 +178,24 @@ cdrm::VertexDescriptor WeldingCdrmGenerator::addNozzleVertex(const ob::State *s)
   Eigen::Vector3d contact = robot_state.getGlobalLinkTransform(flange_link_).translation();
 
   // We don't need to check for duplicates as each vertex descriptor is only processed once.
-  const auto vertex = boost::add_vertex(cdrm::Vertex{config}, nozzle_cdrm_->roadmap_);
-  const auto contact_key = nozzle_cdrm_->pointToKey(contact);
-  nozzle_cdrm_->contacts_.insert(std::make_pair(contact_key, vertex));
+  const auto vertex = boost::add_vertex(cdrm::Vertex{config}, nozzle_cdrm.roadmap_);
+  const auto contact_key = nozzle_cdrm.pointToKey(contact);
+  nozzle_cdrm.contacts_.insert(std::make_pair(contact_key, vertex));
 
   // Update the workspace and contact bounds.
   const auto distance = contact.norm();
 
-  nozzle_cdrm_->min_contact_distance_ = std::min(nozzle_cdrm_->min_contact_distance_, distance);
-  nozzle_cdrm_->max_contact_distance_ = std::max(nozzle_cdrm_->max_contact_distance_, distance);
+  nozzle_cdrm.min_contact_distance_ = std::min(nozzle_cdrm.min_contact_distance_, distance);
+  nozzle_cdrm.max_contact_distance_ = std::max(nozzle_cdrm.max_contact_distance_, distance);
 
-  nozzle_cdrm_->workspace_min_ = contact.cwiseMin(nozzle_cdrm_->workspace_min_);
-  nozzle_cdrm_->workspace_max_ = contact.cwiseMax(nozzle_cdrm_->workspace_max_);
+  nozzle_cdrm.workspace_min_ = contact.cwiseMin(nozzle_cdrm.workspace_min_);
+  nozzle_cdrm.workspace_max_ = contact.cwiseMax(nozzle_cdrm.workspace_max_);
 
   // Voxelise the state.
-  const auto callback = [this, &vertex](const Eigen::Vector3d &p, const Eigen::Vector3d &n)
+  const auto callback = [this, &vertex, &nozzle_cdrm](const Eigen::Vector3d &p, const Eigen::Vector3d &n)
   {
-    auto key = nozzle_cdrm_->pointToKey(p);
-    auto existing = nozzle_cdrm_->colliding_vertices_.equal_range(key);
+    auto key = nozzle_cdrm.pointToKey(p);
+    auto existing = nozzle_cdrm.colliding_vertices_.equal_range(key);
     bool found = false;
 
     for (auto it = existing.first; it != existing.second; ++it)
@@ -209,7 +208,7 @@ cdrm::VertexDescriptor WeldingCdrmGenerator::addNozzleVertex(const ob::State *s)
     }
 
     if (!found)
-      nozzle_cdrm_->colliding_vertices_.insert({key, vertex});
+      nozzle_cdrm.colliding_vertices_.insert({key, vertex});
   };
   cdrm::voxelise(robot_state, { nozzle_link_ }, goal_->nozzle_resolution, callback, Eigen::Isometry3d());
 
@@ -219,7 +218,9 @@ cdrm::VertexDescriptor WeldingCdrmGenerator::addNozzleVertex(const ob::State *s)
 cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescriptor &a,
                                                          const cdrm::VertexDescriptor &b)
 {
-  const auto edge = boost::add_edge(a, b, nozzle_cdrm_->roadmap_).first;
+  auto &nozzle_cdrm = cdrm_->nozzle_cdrm_;
+
+  const auto edge = boost::add_edge(a, b, nozzle_cdrm.roadmap_).first;
 
   moveit::core::RobotState sa(robot_model_);
   moveit::core::RobotState sb(robot_model_);
@@ -228,11 +229,11 @@ cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescr
   return edge;
 
   sa.setToDefaultValues();
-  applyNozzleConfigurationToState(sa, nozzle_cdrm_->roadmap_[a].q_, nozzle_link_);
+  applyNozzleConfigurationToState(sa, nozzle_cdrm.roadmap_[a].q_, nozzle_link_);
   sa.update();
 
   sb.setToDefaultValues();
-  applyNozzleConfigurationToState(sb, nozzle_cdrm_->roadmap_[b].q_, nozzle_link_);
+  applyNozzleConfigurationToState(sb, nozzle_cdrm.roadmap_[b].q_, nozzle_link_);
   sb.update();
 
   // Get the displacement the two nozzle links positions.
@@ -244,9 +245,9 @@ cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescr
   auto steps = static_cast<unsigned int>(max_displacement / goal_->nozzle_resolution);
   auto state = sa;
 
-  const auto callback = [this, &edge](const Eigen::Vector3d &p, const Eigen::Vector3d &n) {
-    auto key = nozzle_cdrm_->pointToKey(p);
-    auto existing = nozzle_cdrm_->colliding_edges_.equal_range(key);
+  const auto callback = [this, &edge, &nozzle_cdrm](const Eigen::Vector3d &p, const Eigen::Vector3d &n) {
+    auto key = nozzle_cdrm.pointToKey(p);
+    auto existing = nozzle_cdrm.colliding_edges_.equal_range(key);
     bool found = false;
 
     for (auto it = existing.first; it != existing.second; ++it)
@@ -259,7 +260,7 @@ cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescr
     }
 
     if (!found)
-      nozzle_cdrm_->colliding_edges_.insert({key, edge});
+      nozzle_cdrm.colliding_edges_.insert({key, edge});
   };
 
   for (unsigned int i = 0; i <= steps; ++i)

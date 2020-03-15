@@ -23,13 +23,10 @@ class State;
 }
 }
 
-namespace cdrm
-{
-class Cdrm;
-}
-
 namespace cdrm_welding
 {
+class WeldingCdrm;
+
 /**
  * Generates a composite CDRM suitable for planning welds.
  */
@@ -64,6 +61,6 @@ private:
   const moveit::core::JointModelGroup *end_effector_;
   const moveit::core::LinkModel *flange_link_;
   const moveit::core::LinkModel *nozzle_link_;
-  std::unique_ptr<cdrm::Cdrm> nozzle_cdrm_;
+  std::unique_ptr<WeldingCdrm> cdrm_;
 };
 }
