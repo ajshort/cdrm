@@ -7,7 +7,7 @@
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <ros/ros.h>
-#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 namespace cdrm_welding
 {
@@ -19,7 +19,7 @@ public:
     , robot_model_(robot_model)
     , generate_server_(nh_, "generate_welding_cdrm", std::bind(&Server::generateWeldingCdrm, this, std::placeholders::_1), false)
     , plan_service_(nh_.advertiseService("plan_weld", &Server::planWeld, this))
-    , targets_publisher_(nh_.advertise<visualization_msgs::Marker>("targets_marker", 1))
+    , targets_publisher_(nh_.advertise<visualization_msgs::MarkerArray>("target_markers", 1))
   {
     generate_server_.start();
   }

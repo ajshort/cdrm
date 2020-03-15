@@ -14,6 +14,8 @@ MOVEIT_CLASS_FORWARD(RobotModel);
 
 namespace cdrm_welding
 {
+class Weld;
+
 /**
  * Plans a single weld.
  */
@@ -26,6 +28,8 @@ public:
   bool plan(cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_msgs::PlanWeld::Response &res);
 
 private:
+  void publishTargets(const Weld &weld);
+
   moveit::core::RobotModelConstPtr robot_model_;
   ros::Publisher target_publisher_;
 };

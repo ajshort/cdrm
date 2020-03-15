@@ -2,7 +2,7 @@
 
 rostopic pub cdrm_welding_server/generate_welding_cdrm/goal cdrm_welding_msgs/GenerateWeldingCdrmActionGoal "{ \
   goal: { \
-    filename: '~/.ros/welding-cdrm', \
+    filename: 'm10ia_on_gantry.welding-cdrm', \
     group_name: robot_with_gantry, \
     end_effector_name: welding_torch, \
     nozzle_link_name: nozzle_link, \

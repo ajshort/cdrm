@@ -3,7 +3,8 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /Weld1/Status1
       Splitter Ratio: 0.5
     Tree Height: 728
   - Class: rviz/Selection
@@ -64,18 +65,26 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        boom_link_1:
+          Value: true
+        carriage_link_1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        boom_link_2:
+          Value: true
+        carriage_link_2:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        carriage_link:
+        carriage_link_3:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
+        nozzle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         robot_base:
           Alpha: 1
           Show Axes: false
@@ -132,6 +141,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        workpiece_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -144,6 +158,14 @@ Visualization Manager:
       Name: Axes
       Radius: 0.009999999776482582
       Reference Frame: base_link
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /cdrm_welding_server/target_markers
+      Name: Weld
+      Namespaces:
+        "": true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
@@ -173,25 +195,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.623504638671875
+      Distance: 0.5716209411621094
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.07558736205101013
-        Y: 0.0293953325599432
-        Z: 0.03965973109006882
+        X: -0.00026962169795297086
+        Y: 0.13700665533542633
+        Z: 0.02917756512761116
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7053981423377991
+      Pitch: 0.48039770126342773
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.7703980207443237
+      Yaw: 0.4453982710838318
     Saved: ~
 Window Geometry:
   Displays:
