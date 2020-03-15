@@ -19,6 +19,10 @@ catkin_package(
   LIBRARIES cdrm
 )
 
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS})
 
 add_library(cdrm
