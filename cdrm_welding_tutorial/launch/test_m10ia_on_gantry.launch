@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <launch>
-  <include file="$(find cdrm_welding_support)/launch/load_m10ia_on_gantry.launch" />
+  <include file="$(find cdrm_welding_tutorial)/launch/load_m10ia_on_gantry.launch" />
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="use_gui" value="true" />
   </node>
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cdrm_welding_support)/config/config.rviz" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cdrm_welding_tutorial)/config/config.rviz" required="true" />
 </launch>

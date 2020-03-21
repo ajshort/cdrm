@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>cdrm_welding_support</name>
+  <name>cdrm_welding_tutorial</name>
   <version>0.0.0</version>
-  <description>The cdrm_welding_support package</description>
+  <description>The cdrm_welding_tutorial package</description>
   <maintainer email="andrewjshort@gmail.com">Andrew Short</maintainer>
   <license>MIT</license>
 

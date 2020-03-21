@@ -80,13 +80,13 @@
   <link name="torch_link">
     <visual>
       <geometry>
-        <mesh filename="package://cdrm_welding_support/meshes/visual/torch_link.stl" />
+        <mesh filename="package://cdrm_welding_tutorial/meshes/visual/torch_link.stl" />
       </geometry>
       <material name="gray" />
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://cdrm_welding_support/meshes/visual/torch_link.stl" />
+        <mesh filename="package://cdrm_welding_tutorial/meshes/visual/torch_link.stl" />
       </geometry>
     </collision>
   </link>
@@ -94,13 +94,13 @@
   <link name="nozzle_link">
     <visual>
       <geometry>
-        <mesh filename="package://cdrm_welding_support/meshes/visual/nozzle_link.stl" />
+        <mesh filename="package://cdrm_welding_tutorial/meshes/visual/nozzle_link.stl" />
       </geometry>
       <material name="gray" />
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://cdrm_welding_support/meshes/visual/nozzle_link.stl" />
+        <mesh filename="package://cdrm_welding_tutorial/meshes/visual/nozzle_link.stl" />
       </geometry>
     </collision>
   </link>
@@ -127,13 +127,13 @@
   <link name="workpiece_link">
     <visual>
       <geometry>
-        <mesh filename="package://cdrm_welding_support/meshes/l_profile.stl" />
+        <mesh filename="package://cdrm_welding_tutorial/meshes/l_profile.stl" />
       </geometry>
       <material name="gray" />
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://cdrm_welding_support/meshes/l_profile.stl" />
+        <mesh filename="package://cdrm_welding_tutorial/meshes/l_profile.stl" />
       </geometry>
     </collision>
   </link>

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<launch>
+  <param
+    name="robot_description"
+    command="$(find xacro)/xacro '$(find cdrm_welding_tutorial)/urdf/m10ia_on_gantry.xacro.urdf'"
+  />
+
+  <param
+    name="robot_description_semantic"
+    command="$(find xacro)/xacro '$(find cdrm_welding_tutorial)/srdf/m10ia_on_gantry.xacro.srdf'"
+  />
+
+  <group ns="robot_description_kinematics">
+    <rosparam command="load" file="$(find cdrm_welding_tutorial)/config/kinematics.yaml"/>
+  </group>
+</launch>
