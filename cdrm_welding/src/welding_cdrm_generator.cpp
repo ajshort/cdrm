@@ -208,7 +208,10 @@ cdrm::VertexDescriptor WeldingCdrmGenerator::addNozzleVertex(const ob::State *s)
     }
 
     if (!found)
+    {
+      nozzle_cdrm.aabb_.extend(p);
       nozzle_cdrm.colliding_vertices_.insert({key, vertex});
+    }
   };
   cdrm::voxelise(robot_state, { nozzle_link_ }, goal_->nozzle_resolution, callback, Eigen::Isometry3d());
 
@@ -260,7 +263,10 @@ cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescr
     }
 
     if (!found)
+    {
+      nozzle_cdrm.aabb_.extend(p);
       nozzle_cdrm.colliding_edges_.insert({key, edge});
+    }
   };
 
   for (unsigned int i = 0; i <= steps; ++i)

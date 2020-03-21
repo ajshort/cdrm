@@ -152,7 +152,10 @@ VertexDescriptor Generator::addVertex(const ob::State *s)
     }
 
     if (!found)
+    {
+      cdrm_->aabb_.extend(p);
       cdrm_->colliding_vertices_.insert({key, vertex});
+    }
   };
   voxelise(robot_state, link_models_, goal_->resolution, callback, origin_tf_inv_);
 
@@ -204,7 +207,10 @@ EdgeDescriptor Generator::addEdge(const VertexDescriptor &a, const VertexDescrip
     }
 
     if (!found)
+    {
+      cdrm_->aabb_.extend(p);
       cdrm_->colliding_edges_.insert({key, edge});
+    }
   };
 
   for (unsigned int i = 0; i <= steps; ++i)

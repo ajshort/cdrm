@@ -3,6 +3,7 @@
 #include <cdrm/roadmap.h>
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <array>
 #include <unordered_map>
@@ -36,6 +37,9 @@ public:
   std::multimap<Key, VertexDescriptor> colliding_vertices_;
   std::multimap<Key, EdgeDescriptor> colliding_edges_;
   std::multimap<Key, VertexDescriptor> contacts_;
+
+  // An AABB of all voxelisations.
+  Eigen::AlignedBox3d aabb_;
 
   Eigen::Vector3d workspace_min_ = Eigen::Vector3d::Constant(std::numeric_limits<double>::max());
   Eigen::Vector3d workspace_max_ = Eigen::Vector3d::Constant(std::numeric_limits<double>::lowest());
