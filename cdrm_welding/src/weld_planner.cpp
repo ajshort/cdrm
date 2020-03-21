@@ -5,6 +5,9 @@
 #include <cdrm_welding/weld.h>
 #include <cdrm_welding/welding_cdrm.h>
 
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/connected_components.hpp>
+#include <boost/graph/filtered_graph.hpp>
 #include <eigen_conversions/eigen_msg.h>
 #include <moveit/robot_state/robot_state.h>
 #include <ros/console.h>
@@ -20,6 +23,26 @@ WeldPlanner::WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
   : robot_model_(robot_model), target_publisher_(target_publisher)
 {
 }
+
+template <typename T>
+struct FilterPredicate
+{
+  FilterPredicate()
+  {
+  }
+
+  FilterPredicate(const std::set<T> &invalid) : invalid_(&invalid)
+  {
+  }
+
+  template <typename Vertex>
+  bool operator()(const Vertex &v) const
+  {
+    return invalid_->count(v) == 0;
+  }
+
+  const std::set<T> *invalid_ = nullptr;
+};
 
 bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_msgs::PlanWeld::Response &res)
 {
@@ -110,6 +133,66 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
       &min_bound,
       &max_bound
     );
+  }
+
+  // Now that we know which cells are occupied at each step, we need to convert this into the vertices and edges
+  // which are invalid.
+  std::vector<std::set<cdrm::VertexDescriptor>> occupied_nozzle_vertices(nozzle_voxelised.size());
+  std::vector<std::set<cdrm::EdgeDescriptor>> occupied_nozzle_edges(nozzle_voxelised.size());
+
+  for (std::size_t i = 0; i < nozzle_voxelised.size(); ++i)
+  {
+    for (const auto &key : nozzle_voxelised[i])
+    {
+      auto v_range = cdrm.nozzle_cdrm_.colliding_vertices_.equal_range(key);
+      auto e_range = cdrm.nozzle_cdrm_.colliding_edges_.equal_range(key);
+
+      for (auto it = v_range.first; it != v_range.second; ++it)
+        occupied_nozzle_vertices[i].insert(it->second);
+
+      for (auto it = e_range.first; it != e_range.second; ++it)
+        occupied_nozzle_edges[i].insert(it->second);
+    }
+  }
+
+  // We use the occupied cells at each pair of points to filter a CDRM to generate reachable pairs.
+  std::vector<std::vector<int>> connected_components(steps);
+
+  for (int i = 0; i < steps; ++i)
+    connected_components[i].resize(boost::num_vertices(cdrm.nozzle_cdrm_.roadmap_));
+
+  for (int i = 0; i < steps; ++i)
+  {
+    using VertexFilter = FilterPredicate<cdrm::VertexDescriptor>;
+    using EdgeFilter = FilterPredicate<cdrm::EdgeDescriptor>;
+    using FilteredGraph = boost::filtered_graph<cdrm::Roadmap, EdgeFilter, VertexFilter>;
+
+    // Merge the inaccessible items from the from and the to item.
+    std::set<cdrm::VertexDescriptor> invalid_vertices;
+    std::set<cdrm::EdgeDescriptor> invalid_edges;
+
+    std::set_union(occupied_nozzle_vertices[i].begin(),
+                   occupied_nozzle_vertices[i].end(),
+                   occupied_nozzle_vertices[i + 1].begin(),
+                   occupied_nozzle_vertices[i + 1].end(),
+                   std::inserter(invalid_vertices, invalid_vertices.begin()));
+
+    std::set_union(occupied_nozzle_edges[i].begin(),
+                   occupied_nozzle_edges[i].end(),
+                   occupied_nozzle_edges[i + 1].begin(),
+                   occupied_nozzle_edges[i + 1].end(),
+                   std::inserter(invalid_edges, invalid_edges.begin()));
+
+    // Create a roadmap of items which are accessible from steps[i] and steps[i + 1].
+    const auto &from = nozzle_voxelised[i];
+    const auto &to = nozzle_voxelised[i + 1];
+
+    VertexFilter vertex_filter(invalid_vertices);
+    EdgeFilter edge_filter(invalid_edges);
+    FilteredGraph filtered(cdrm.nozzle_cdrm_.roadmap_, edge_filter, vertex_filter);
+
+    // Then use this to create a connected components.
+    boost::connected_components(filtered, &connected_components[i][0]);
   }
 
   // Get the CDRM for the toolpath and filter it.
