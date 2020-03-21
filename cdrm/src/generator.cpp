@@ -246,6 +246,8 @@ void Generator::updateProgress(double progress)
   {
     progress_callback_(progress);
     last_progress_time_ = ros::Time::now();
+
+    ROS_INFO_STREAM("Generated " << (progress * 100) << "%");
   }
 }
 }

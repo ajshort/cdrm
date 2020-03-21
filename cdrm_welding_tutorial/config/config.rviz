@@ -4,7 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Weld1/Status1
+        - /Axes1
       Splitter Ratio: 0.5
     Tree Height: 728
   - Class: rviz/Selection
@@ -132,10 +132,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        tcp_link:
-          Alpha: 1
-          Show Axes: true
-          Show Trail: false
         torch_link:
           Alpha: 1
           Show Axes: false
@@ -145,7 +141,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -154,17 +149,17 @@ Visualization Manager:
       Visual Enabled: true
     - Class: rviz/Axes
       Enabled: true
-      Length: 0.25
+      Length: 0.10000000149011612
       Name: Axes
       Radius: 0.009999999776482582
-      Reference Frame: base_link
+      Reference Frame: nozzle_link
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /cdrm_welding_node/target_markers
       Name: Weld
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -195,25 +190,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.5716209411621094
+      Distance: 3.485328197479248
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.00026962169795297086
-        Y: 0.13700665533542633
-        Z: 0.02917756512761116
+        X: -2.2910854816436768
+        Y: 0.9334461688995361
+        Z: 3.334779739379883
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.48039770126342773
+      Pitch: 0.4703977108001709
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.4453982710838318
+      Yaw: 0.43039828538894653
     Saved: ~
 Window Geometry:
   Displays:

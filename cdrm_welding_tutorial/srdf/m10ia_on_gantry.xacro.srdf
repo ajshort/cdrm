@@ -1,7 +1,14 @@
 <?xml version="1.0" ?>
 <robot name="m10ia_on_gantry" xmlns:xacro="http://ros.org/wiki/xacro">
-  <group name="manipulator">
+  <group name="robot">
     <chain base_link="robot_base_link" tip_link="robot_tool0" />
+  </group>
+
+  <group name="robot_with_gantry">
+    <group name="robot" />
+    <joint name="carriage_joint_1" />
+    <joint name="carriage_joint_2" />
+    <joint name="carriage_joint_3" />
   </group>
 
   <group name="welding_torch">
@@ -9,5 +16,11 @@
     <link name="nozzle_link" />
   </group>
 
-  <end_effector name="welding_torch" parent_link="robot_tool0" group="welding_torch" parent_group="manipulator" />
+  <end_effector name="welding_torch" parent_link="robot_tool0" group="welding_torch" parent_group="robot" />
+
+  <disable_collisions link1="link_5" link2="torch_link" />
+  <disable_collisions link1="link_5" link2="nozzle_link" />
+  <disable_collisions link1="link_6" link2="torch_link" />
+  <disable_collisions link1="link_6" link2="nozzle_link" />
+  <disable_collisions link1="torch_link" link2="nozzle_link" />
 </robot>

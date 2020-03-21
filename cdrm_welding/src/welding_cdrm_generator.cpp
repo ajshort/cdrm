@@ -4,7 +4,9 @@
 
 #include <cdrm/cdrm.h>
 #include <cdrm/cdrm_serialisation.h>
+#include <cdrm/generator.h>
 #include <cdrm/voxelise.h>
+#include <cdrm_msgs/GenerateCdrmGoal.h>
 
 #include <moveit/robot_model/robot_model.h>
 #include <ompl/base/PlannerData.h>
@@ -47,6 +49,7 @@ void WeldingCdrmGenerator::generate(const cdrm_welding_msgs::GenerateWeldingCdrm
   ROS_INFO("Generating welding CDRM");
 
   generateNozzleCdrm(is_cancelled);
+  generateRobotCdrm(is_cancelled);
 
   // Save the information.
   ROS_INFO("Saving welding CDRM to '%s'...", goal->filename.c_str());
@@ -145,6 +148,27 @@ void WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
   }
 
   ROS_INFO("Finished generating nozzle CDRM");
+
+}
+
+void WeldingCdrmGenerator::generateRobotCdrm(const CancelledFn &is_cancelled)
+{
+  ROS_INFO("Generating robot CDRM...");
+
+  cdrm_msgs::GenerateCdrmGoalPtr goal(new cdrm_msgs::GenerateCdrmGoal);
+  goal->group_name = goal_->group_name;
+  goal->roadmap_size = goal_->roadmap_size;
+  goal->roadmap_k = goal_->roadmap_k;
+  goal->resolution = goal_->robot_resolution;
+  goal->collide_edges = false;
+  goal->collide_tip_link = true;
+
+  cdrm::Generator generator(robot_model_);
+  generator.setGoal(goal);
+  std::unique_ptr<cdrm::Cdrm> cdrm = generator.generate(is_cancelled);
+  cdrm_->nozzle_cdrm_ = *cdrm;
+
+  ROS_INFO("Finished generating robot CDRM");
 }
 
 static void applyNozzleConfigurationToState(moveit::core::RobotState &state,

@@ -109,6 +109,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   cdrm::Cdrm nozzle_cdrm(cdrm.nozzle_cdrm_.resolution_);
 
   const int steps = static_cast<int>(std::ceil(weld.getLength() / 0.005));
+  const double step_size = weld.getLength() / steps;
 
   std::vector<std::set<cdrm::Key>> nozzle_voxelised(steps + 1);
 

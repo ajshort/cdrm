@@ -113,30 +113,10 @@
   <joint name="torch_nozzle_link" type="fixed">
     <parent link="torch_link" />
     <child link="nozzle_link" />
-  </joint>
-
-  <link name="tcp_link">
-  </link>
-
-  <joint name="torch_tcp_joint" type="fixed">
-    <parent link="torch_link" />
-    <child link="tcp_link" />
     <origin xyz="0.05636777 0 0.23057450" rpy="0 ${radians(55)} 0" />
   </joint>
 
-  <link name="workpiece_link">
-    <visual>
-      <geometry>
-        <mesh filename="package://cdrm_welding_tutorial/meshes/l_profile.stl" />
-      </geometry>
-      <material name="gray" />
-    </visual>
-    <collision>
-      <geometry>
-        <mesh filename="package://cdrm_welding_tutorial/meshes/l_profile.stl" />
-      </geometry>
-    </collision>
-  </link>
+  <link name="workpiece_link" />
 
   <joint name="base_workpiece_joint" type="fixed">
     <parent link="base_link" />

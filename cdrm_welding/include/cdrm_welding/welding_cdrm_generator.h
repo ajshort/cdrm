@@ -45,6 +45,7 @@ public:
 
 private:
   void generateNozzleCdrm(const CancelledFn &is_cancelled);
+  void generateRobotCdrm(const CancelledFn &is_cancelled);
 
   bool isNozzleStateValid(const ompl::base::State *state) const;
 

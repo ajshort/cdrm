@@ -21,8 +21,11 @@ cdrm_welding_msgs/Interval rx
 cdrm_welding_msgs/Interval ry
 cdrm_welding_msgs/Interval ctwd
 
-# The resolution in mm for nozzle CDRM.
+# The resolution for nozzle CDRM.
 float64 nozzle_resolution
+
+# The resolution for the robot CDRM.
+float64 robot_resolution
 
 ---
 # The min and max distance from the model group origin to a contact.
