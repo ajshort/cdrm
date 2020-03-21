@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import actionlib
+import rospkg
 import rospy
 
 from cdrm_welding_msgs.msg import GenerateWeldingCdrmAction, GenerateWeldingCdrmGoal, Interval
@@ -13,7 +14,7 @@ def main():
 
     print 'Generating welding CDRM...'
 
-    goal = GenerateWeldingCdrmGoal(filename='m10ia_on_gantry.welding-cdrm',
+    goal = GenerateWeldingCdrmGoal(filename=rospkg.get_ros_home() + '/m10ia_on_gantry.welding-cdrm',
                                    group_name='robot_with_gantry',
                                    end_effector_name='welding_torch',
                                    nozzle_link_name='nozzle_link',

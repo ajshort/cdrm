@@ -1,3 +1,6 @@
+# The name of the welding CDRM file to load.
+string cdrm_filename
+
 # The group name which controls the robot.
 string robot_group_name
 

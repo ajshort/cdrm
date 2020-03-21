@@ -3,6 +3,7 @@
 #include <cdrm/cdrm.h>
 #include <cdrm/voxelise.h>
 #include <cdrm_welding/weld.h>
+#include <cdrm_welding/welding_cdrm.h>
 
 #include <eigen_conversions/eigen_msg.h>
 #include <moveit/robot_state/robot_state.h>
@@ -20,12 +21,21 @@ WeldPlanner::WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
 {
 }
 
-bool WeldPlanner::plan(cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_msgs::PlanWeld::Response &res)
+bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_msgs::PlanWeld::Response &res)
 {
-  ros::Time start_time = ros::Time::now();
-  ros::Time limit_time = start_time + ros::Duration(req.planning_timeout);
+  ROS_INFO("Received weld planning request");
 
-  ROS_DEBUG("Received weld planning request");
+  // We load the CDRM - note we don't count this as part of the planning time. This should really be cached or
+  // pre-loaded when the mode is created.
+  WeldingCdrm cdrm;
+
+  ROS_INFO("Loading CDRM...");
+
+  if (!cdrm.load(req.cdrm_filename))
+  {
+    ROS_ERROR("Could not load the welding CDRM from '%s'", req.cdrm_filename.c_str());
+    return false;
+  }
 
   if (!(nozzle_link_ = robot_model_->getLinkModel(req.nozzle_link_name)))
   {
@@ -62,26 +72,32 @@ bool WeldPlanner::plan(cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_m
   // Publish the targets as a line strip.
   publishTargets(weld);
 
+  // Start the actual planning process.
+  ROS_INFO("Starting planning...");
+
+  ros::Time start_time = ros::Time::now();
+  ros::Time limit_time = start_time + ros::Duration(req.planning_timeout);
+
   // Create a robot state.
   moveit::core::RobotState state(robot_model_);
   state.setToDefaultValues();
 
   // Voxelise around the toolpath every 5mm in its local frame.
-  cdrm::Cdrm nozzle_cdrm(0.001);
+  cdrm::Cdrm nozzle_cdrm(cdrm.nozzle_cdrm_.resolution_);
 
   const int steps = static_cast<int>(std::ceil(weld.getLength() / 0.005));
 
   std::vector<std::set<cdrm::Key>> nozzle_voxelised(steps + 1);
+
+  // We voxelise the AABB around the nozzle.
+  const Eigen::Vector3d &min_bound = cdrm.nozzle_cdrm_.aabb_.min();
+  const Eigen::Vector3d &max_bound = cdrm.nozzle_cdrm_.aabb_.max();
 
   for (int step = 0; step <= steps; ++step)
   {
     const double t = static_cast<double>(step) / steps;
     const Eigen::Isometry3d &workpiece_tf = state.getGlobalLinkTransform(workpiece_link_);
     const Eigen::Isometry3d weld_tf = workpiece_tf * weld.getTransform(t);
-
-    // We voxelise 100mm around the nozzle (TODO this should be read from the nozzle CDRM size).
-    Eigen::Vector3d min_bound(-0.1, -0.1, -0.1);
-    Eigen::Vector3d max_bound(0.1, 0.1, 0.1);
 
     cdrm::voxelise(
       state,
@@ -99,6 +115,8 @@ bool WeldPlanner::plan(cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_m
   // Get the CDRM for the toolpath and filter it.
   // Get the CDRM for the manipulator and filter the toolpath CDRM edges to reachable ones only.
   // See if we can create a path from near the start to near the end.
+
+  ROS_INFO_STREAM("Finished planning after " << (ros::Time::now() - start_time).toSec() << "s");
 
   return false;
 }

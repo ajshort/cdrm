@@ -26,7 +26,7 @@ public:
   WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
               const ros::Publisher &target_publisher);
 
-  bool plan(cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_msgs::PlanWeld::Response &res);
+  bool plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_msgs::PlanWeld::Response &res);
 
 private:
   void publishTargets(const Weld &weld);

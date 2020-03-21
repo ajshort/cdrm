@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import math
+import rospkg
 import rospy
 
 from cdrm_welding_msgs.msg import IntervalWithOptimal
@@ -22,7 +23,8 @@ def plan_weld():
     ctwd_range=IntervalWithOptimal(min=0, max=0.015, optimal=0)
 
     try:
-        res = service(robot_group_name='robot',
+        res = service(cdrm_filename=rospkg.get_ros_home() + '/m10ia_on_gantry.welding-cdrm',
+                      robot_group_name='robot',
                       robot_positioner_group_name='track',
                       nozzle_link_name='nozzle_link',
                       workpiece_link_name='workpiece_link',

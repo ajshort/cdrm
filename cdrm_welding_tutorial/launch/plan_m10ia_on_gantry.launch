@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<launch>
+  <include file="$(find cdrm_welding_tutorial)/launch/load_m10ia_on_gantry.launch" />
+  <node
+    name="cdrm_welding_node"
+    pkg="cdrm_welding"
+    type="cdrm_welding_node"
+    output="screen"
+    required="true"
+   />
+</launch>
