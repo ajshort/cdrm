@@ -49,7 +49,7 @@ private:
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "cdrm_welding_server");
+  ros::init(argc, argv, "cdrm_welding_node");
   ros::NodeHandle node_handle;
 
   robot_model_loader::RobotModelLoader loader("robot_description");

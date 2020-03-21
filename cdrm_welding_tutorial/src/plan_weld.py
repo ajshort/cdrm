@@ -7,7 +7,7 @@ from cdrm_welding_msgs.msg import IntervalWithOptimal
 from cdrm_welding_msgs.srv import PlanWeld
 from geometry_msgs.msg import Point, Vector3
 
-SERVICE = '/cdrm_welding_server/plan_weld'
+SERVICE = '/cdrm_welding_node/plan_weld'
 
 def plan_weld():
     rospy.wait_for_service(SERVICE)

@@ -161,7 +161,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /cdrm_welding_server/target_markers
+      Marker Topic: /cdrm_welding_node/target_markers
       Name: Weld
       Namespaces:
         "": true

@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-rosrun actionlib axclient.py /cdrm_welding_server/generate_cdrm
