@@ -195,6 +195,27 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     boost::connected_components(filtered, &connected_components[i][0]);
   }
 
+  // Start at the start, and for each vertex in the start try and generate a path to the end through the pairwise
+  // nozzle CDRMs.
+  std::vector<cdrm::VertexDescriptor> nozzle_path;
+
+  const auto vertices = boost::vertices(cdrm.nozzle_cdrm_.roadmap_);
+
+  for (int i = 0; i <= steps; ++i)
+  {
+    for (auto it = vertices.first; it != vertices.second; ++it)
+    {
+      if (occupied_nozzle_vertices[i].count(*it))
+        continue;
+
+      nozzle_path.push_back(*it);
+
+      ROS_INFO_STREAM(cdrm.nozzle_cdrm_.roadmap_[*it].q_.transpose());
+
+      break;
+    }
+  }
+
   // Get the CDRM for the toolpath and filter it.
   // Get the CDRM for the manipulator and filter the toolpath CDRM edges to reachable ones only.
   // See if we can create a path from near the start to near the end.
