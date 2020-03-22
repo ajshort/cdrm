@@ -1,0 +1,5 @@
+groups:
+  - robot
+robot:
+  cdrm_filename: example_quadruped.cdrm
+  range: 0.2

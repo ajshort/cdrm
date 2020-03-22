@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <param name="moveit_controller_manager" value="moveit_fake_controller_manager/MoveItFakeControllerManager"/>
+  <rosparam file="$(find example_quadruped_moveit_config)/config/fake_controllers.yaml"/>
+</launch>

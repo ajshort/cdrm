@@ -1,0 +1,12 @@
+al:
+  kinematics_solver: example_quadruped_leg_kinematics/LegKinematicsPlugin
+ar:
+  kinematics_solver: example_quadruped_leg_kinematics/LegKinematicsPlugin
+bl:
+  kinematics_solver: example_quadruped_leg_kinematics/LegKinematicsPlugin
+br:
+  kinematics_solver: example_quadruped_leg_kinematics/LegKinematicsPlugin
+cl:
+  kinematics_solver: example_quadruped_leg_kinematics/LegKinematicsPlugin
+cr:
+  kinematics_solver: example_quadruped_leg_kinematics/LegKinematicsPlugin

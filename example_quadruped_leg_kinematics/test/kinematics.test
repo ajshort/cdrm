@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find example_quadruped_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true" />
+  </include>
+
+  <test pkg="example_quadruped_leg_kinematics"
+        type="kinematics_test"
+        name="kinematics_test"
+        test-name="kinematics"
+        time-limit="2.0" />
+</launch>

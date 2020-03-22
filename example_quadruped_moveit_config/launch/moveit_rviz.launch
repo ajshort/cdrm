@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="debug" default="false" />
+  <arg name="launch_prefix" unless="$(arg debug)" value="" />
+  <arg name="launch_prefix" if="$(arg debug)" value="gdb --ex run --args" />
+
+  <arg name="config" default="false" />
+  <arg name="command_args" unless="$(arg config)" value="" />
+  <arg name="command_args" if="$(arg config)" value="-d $(find example_quadruped_moveit_config)/launch/moveit.rviz" />
+
+  <node name="$(anon rviz)" launch-prefix="$(arg launch_prefix)" pkg="rviz" type="rviz" args="$(arg command_args)"
+        output="screen">
+    <rosparam command="load" file="$(find example_quadruped_moveit_config)/config/kinematics.yaml"/>
+  </node>
+</launch>

@@ -1,0 +1,7 @@
+<library path="libexample_quadruped_leg_kinematics">
+  <class name="example_quadruped_leg_kinematics/LegKinematicsPlugin"
+         type="example_quadruped_leg_kinematics::LegKinematicsPlugin"
+         base_class_type="kinematics::KinematicsBase">
+    <description></description>
+  </class>
+</library>

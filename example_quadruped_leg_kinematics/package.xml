@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>example_quadruped_leg_kinematics</name>
+  <version>0.0.0</version>
+  <description>Kinematics plugin for example_quadruped legs</description>
+  <maintainer email="andrewjshort@gmail.com">Andrew Short</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>angles</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning</depend>
+  <depend>roscpp</depend>
+
+  <export>
+    <moveit_core plugin="${prefix}/plugin_description.xml"/>
+  </export>
+</package>

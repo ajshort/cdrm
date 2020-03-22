@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="paused" default="false" />
+  <arg name="use_sim_time" default="true" />
+  <arg name="gui" default="true" />
+  <arg name="headless" default="false" />
+  <arg name="debug" default="false" />
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="use_sim_time" value="$(arg use_sim_time)" />
+    <arg name="headless" value="$(arg headless)" />
+  </include>
+
+  <rosparam file="$(find example_quadruped_moveit_config)/config/controllers.yaml" command="load" />
+
+  <node name="robot_spawner" pkg="gazebo_ros" type="spawn_model" output="screen"
+        args="-urdf -model example_quadruped -param robot_description" />
+
+  <node name="controller_spawner" pkg="controller_manager" type="spawner"
+        respawn="false" output="screen"
+        ns="/example_quadruped"
+        args="al_coxa_controller al_femur_controller al_tibia_controller
+              ar_coxa_controller ar_femur_controller ar_tibia_controller
+              bl_coxa_controller bl_femur_controller bl_tibia_controller
+              br_coxa_controller br_femur_controller br_tibia_controller
+              cl_coxa_controller cl_femur_controller cl_tibia_controller
+              cr_coxa_controller cr_femur_controller cr_tibia_controller
+              joint_state_controller" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false"
+        output="screen">
+    <remap from="/joint_states" to="/example_quadruped/joint_states" />
+  </node>
+</launch>

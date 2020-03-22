@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Whether to reset the database -->
+  <arg name="reset" default="false"/>
+
+  <!-- Optionally specify a custom database location -->
+  <arg name="moveit_warehouse_database_path"
+       default="$(find example_quadruped_moveit_config)/default_warehouse_mongo_db" />
+
+  <include file="$(find example_quadruped_moveit_config)/launch/warehouse.launch">
+    <arg name="moveit_warehouse_database_path" value="$(arg moveit_warehouse_database_path)" />
+  </include>
+
+  <node if="$(arg reset)" name="$(anon moveit_default_db_reset)" pkg="moveit_ros_warehouse"
+        type="moveit_init_demo_warehouse" output="screen" />
+</launch>

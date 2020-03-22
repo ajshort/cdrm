@@ -1,0 +1,79 @@
+example_quadruped:
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+
+  al_coxa_controller:
+    type: effort_controllers/JointPositionController
+    joint: al_coxa_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  al_femur_controller:
+    type: effort_controllers/JointPositionController
+    joint: al_femur_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  al_tibia_controller:
+    type: effort_controllers/JointPositionController
+    joint: al_tibia_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  ar_coxa_controller:
+    type: effort_controllers/JointPositionController
+    joint: ar_coxa_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  ar_femur_controller:
+    type: effort_controllers/JointPositionController
+    joint: ar_femur_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  ar_tibia_controller:
+    type: effort_controllers/JointPositionController
+    joint: ar_tibia_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+
+  bl_coxa_controller:
+    type: effort_controllers/JointPositionController
+    joint: bl_coxa_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  bl_femur_controller:
+    type: effort_controllers/JointPositionController
+    joint: bl_femur_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  bl_tibia_controller:
+    type: effort_controllers/JointPositionController
+    joint: bl_tibia_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  br_coxa_controller:
+    type: effort_controllers/JointPositionController
+    joint: br_coxa_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  br_femur_controller:
+    type: effort_controllers/JointPositionController
+    joint: br_femur_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  br_tibia_controller:
+    type: effort_controllers/JointPositionController
+    joint: br_tibia_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+
+  cl_coxa_controller:
+    type: effort_controllers/JointPositionController
+    joint: cl_coxa_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  cl_femur_controller:
+    type: effort_controllers/JointPositionController
+    joint: cl_femur_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  cl_tibia_controller:
+    type: effort_controllers/JointPositionController
+    joint: cl_tibia_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  cr_coxa_controller:
+    type: effort_controllers/JointPositionController
+    joint: cr_coxa_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  cr_femur_controller:
+    type: effort_controllers/JointPositionController
+    joint: cr_femur_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }
+  cr_tibia_controller:
+    type: effort_controllers/JointPositionController
+    joint: cr_tibia_joint
+    pid: { p: 50.0, i: 0.0, d: 0.0 }

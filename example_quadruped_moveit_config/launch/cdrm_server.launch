@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="cdrm_filename" default="example_quadruped.cdrm" />
+
+  <node name="cdrm_node" pkg="cdrm" type="cdrm_node">
+    <param name="cdrm_filename" value="$(arg cdrm_filename)" />
+  </node>
+</launch>

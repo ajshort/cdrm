@@ -1,0 +1,127 @@
+joint_limits:
+  al_coxa_joint:
+    min_position: -1.8326
+    max_position: 1.8326
+    has_velocity_limits: true
+    max_velocity: 7
+    has_acceleration_limits: false
+    max_acceleration: 0
+  al_femur_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  al_tibia_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  ar_coxa_joint:
+    min_position: -1.8326
+    max_position: 1.8326
+    has_velocity_limits: true
+    max_velocity: 7
+    has_acceleration_limits: false
+    max_acceleration: 0
+  ar_femur_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  ar_tibia_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  bl_coxa_joint:
+    min_position: -1.8326
+    max_position: 1.8326
+    has_velocity_limits: true
+    max_velocity: 7
+    has_acceleration_limits: false
+    max_acceleration: 0
+  bl_femur_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  bl_tibia_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  br_coxa_joint:
+    min_position: -1.8326
+    max_position: 1.8326
+    has_velocity_limits: true
+    max_velocity: 7
+    has_acceleration_limits: false
+    max_acceleration: 0
+  br_femur_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  br_tibia_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  cl_coxa_joint:
+    min_position: -1.8326
+    max_position: 1.8326
+    has_velocity_limits: true
+    max_velocity: 7
+    has_acceleration_limits: false
+    max_acceleration: 0
+  cl_femur_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  cl_tibia_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  cr_coxa_joint:
+    min_position: -1.8326
+    max_position: 1.8326
+    has_velocity_limits: true
+    max_velocity: 7
+    has_acceleration_limits: false
+    max_acceleration: 0
+  cr_femur_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0
+  cr_tibia_joint:
+    min_position: -1.9199
+    max_position: 1.9199
+    has_velocity_limits: true
+    max_velocity: 5.5
+    has_acceleration_limits: false
+    max_acceleration: 0

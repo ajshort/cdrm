@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <material name="example_quadruped_material">
+    <color rgba="0.75 0.75 0.75 1" />
+  </material>
+</robot>

@@ -1,0 +1,31 @@
+controller_list:
+  - name: fake_al_controller
+    joints:
+      - al_coxa_joint
+      - al_femur_joint
+      - al_tibia_joint
+  - name: fake_ar_controller
+    joints:
+      - ar_coxa_joint
+      - ar_femur_joint
+      - ar_tibia_joint
+  - name: fake_bl_controller
+    joints:
+      - bl_coxa_joint
+      - bl_femur_joint
+      - bl_tibia_joint
+  - name: fake_br_controller
+    joints:
+      - br_coxa_joint
+      - br_femur_joint
+      - br_tibia_joint
+  - name: fake_cl_controller
+    joints:
+      - cl_coxa_joint
+      - cl_femur_joint
+      - cl_tibia_joint
+  - name: fake_cr_controller
+    joints:
+      - cr_coxa_joint
+      - cr_femur_joint
+      - cr_tibia_joint
