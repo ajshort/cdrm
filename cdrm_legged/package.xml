@@ -13,4 +13,8 @@
   <build_export_depend>moveit_ros_planning</build_export_depend>
   <exec_depend>cdrm</exec_depend>
   <exec_depend>moveit_ros_planning</exec_depend>
+
+  <export>
+    <moveit_core plugin="${prefix}/plugin.xml" />
+  </export>
 </package>

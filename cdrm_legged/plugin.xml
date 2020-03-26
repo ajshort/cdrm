@@ -1,0 +1,7 @@
+<library path="libcdrm_legged_moveit_plugin">
+  <class name="cdrm_legged/Planner"
+         type="cdrm_legged::PlannerManager"
+         base_class_type="planning_interface::PlannerManager">
+    <description></description>
+  </class>
+</library>
