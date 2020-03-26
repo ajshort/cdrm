@@ -5,6 +5,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   cdrm
+  eigen_conversions
   moveit_ros_planning
   roscpp
 )
@@ -20,6 +21,7 @@ add_library(cdrm_legged
   src/contact_generator_node.cpp
   src/disjoint_sets.cpp
   src/leg_config_generator.cpp
+  src/leg_model.cpp
   src/planner_manager.cpp
 )
 
@@ -29,6 +31,6 @@ target_link_libraries(cdrm_legged ${catkin_LIBRARIES})
 
 add_executable(contact_generator_node src/contact_generator_node.cpp)
 add_dependencies(contact_generator_node cdrm_legged)
-target_link_libraries(contact_generator_node cdrm_legged)
+target_link_libraries(contact_generator_node cdrm_legged ${catkin_LIBRARIES})
 set_target_properties(contact_generator_node PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
 
