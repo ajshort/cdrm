@@ -33,6 +33,11 @@ Eigen::Vector3d Cdrm::keyToPoint(const Key &k) const
   return p;
 }
 
+const Eigen::VectorXd &Cdrm::getVertexConfig(const VertexDescriptor &v) const
+{
+  return roadmap_[v].q_;
+}
+
 bool Cdrm::save(const std::string &filename) const
 {
   try

@@ -28,6 +28,8 @@ public:
   Key pointToKey(const Eigen::Vector3d &p) const;
   Eigen::Vector3d keyToPoint(const Key &k) const;
 
+  const Eigen::VectorXd &getVertexConfig(const VertexDescriptor &v) const;
+
   bool save(const std::string &filename) const;
   bool load(const std::string &filename);
 

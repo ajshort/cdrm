@@ -17,9 +17,18 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_library(cdrm_legged
+  src/contact_generator_node.cpp
+  src/disjoint_sets.cpp
+  src/leg_config_generator.cpp
   src/planner_manager.cpp
 )
 
 add_dependencies(cdrm_legged ${cdrm_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(cdrm_legged ${catkin_LIBRARIES})
+
+add_executable(contact_generator_node src/contact_generator_node.cpp)
+add_dependencies(contact_generator_node cdrm_legged)
+target_link_libraries(contact_generator_node cdrm_legged)
+set_target_properties(contact_generator_node PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+

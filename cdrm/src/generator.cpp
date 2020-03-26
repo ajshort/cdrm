@@ -242,12 +242,13 @@ bool Generator::isStateValid(const ob::State *s)
 
 void Generator::updateProgress(double progress)
 {
-  if (progress >= 1.0 || progress_callback_ && (ros::Time::now() - last_progress_time_).toSec() > 0.5)
+  if (progress >= 1.0 || (ros::Time::now() - last_progress_time_).toSec() > 0.5)
   {
-    progress_callback_(progress);
     last_progress_time_ = ros::Time::now();
-
     ROS_INFO_STREAM("Generated " << (progress * 100) << "%");
+
+    // if (progress_callback_ )
+    //   progress_callback_(progress);
   }
 }
 }

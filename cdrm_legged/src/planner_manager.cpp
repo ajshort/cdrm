@@ -8,7 +8,7 @@ namespace pi = planning_interface;
 namespace cdrm_legged
 {
 /**
- * Exposes LegPlan as a MoveIt plugin.
+ * Exposes a moveit planner plugin.
  */
 class PlannerManager : public pi::PlannerManager
 {

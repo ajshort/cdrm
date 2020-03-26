@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="planning_plugin" value="legplan/LegPlanPlanner" />
+  <arg name="planning_plugin" value="cdrm_legged/Planner" />
 
   <arg name="planning_adapters" value="default_planner_request_adapters/AddTimeParameterization
                                        default_planner_request_adapters/FixWorkspaceBounds

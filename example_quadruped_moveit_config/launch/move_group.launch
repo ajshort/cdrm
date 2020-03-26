@@ -18,7 +18,7 @@
   <arg name="publish_monitored_planning_scene" default="true" />
 
   <include ns="move_group" file="$(find example_quadruped_moveit_config)/launch/planning_pipeline.launch.xml">
-    <arg name="pipeline" value="legplan" />
+    <arg name="pipeline" value="cdrm_legged" />
   </include>
 
   <include ns="move_group" file="$(find example_quadruped_moveit_config)/launch/trajectory_execution.launch.xml"
