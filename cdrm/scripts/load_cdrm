@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rosservice call /cdrm_server/load_cdrm "filename: '$1'"

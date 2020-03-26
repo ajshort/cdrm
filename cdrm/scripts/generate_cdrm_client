@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rosrun actionlib axclient.py /cdrm_server/generate_cdrm
