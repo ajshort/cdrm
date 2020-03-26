@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>legplan</name>
+  <name>cdrm_legged</name>
   <version>0.0.0</version>
-  <description>The legplan package</description>
+  <description>The cdrm_legged package</description>
   <maintainer email="andrewjshort@gmail.com">Andrew Short</maintainer>
   <license>MIT</license>
 

@@ -5,7 +5,7 @@
 
 namespace pi = planning_interface;
 
-namespace legplan
+namespace cdrm_legged
 {
 /**
  * Exposes LegPlan as a MoveIt plugin.
@@ -13,7 +13,7 @@ namespace legplan
 class PlannerManager : public pi::PlannerManager
 {
 public:
-  std::string getDescription() const override { return "Legplan"; }
+  std::string getDescription() const override { return "CDRM Legged Planner"; }
 
   bool initialize(const robot_model::RobotModelConstPtr &model, const std::string &ns)
   {
@@ -40,4 +40,4 @@ private:
 };
 }
 
-CLASS_LOADER_REGISTER_CLASS(legplan::PlannerManager, planning_interface::PlannerManager);
+CLASS_LOADER_REGISTER_CLASS(cdrm_legged::PlannerManager, planning_interface::PlannerManager);

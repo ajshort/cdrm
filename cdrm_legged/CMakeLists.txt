@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(legplan)
+project(cdrm_legged)
 
 add_compile_options(-std=c++11)
 
@@ -11,15 +11,15 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES legplan
+  LIBRARIES cdrm_legged
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library(legplan
+add_library(cdrm_legged
   src/planner_manager.cpp
 )
 
-add_dependencies(legplan ${cdrm_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(cdrm_legged ${cdrm_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(legplan ${catkin_LIBRARIES})
+target_link_libraries(cdrm_legged ${catkin_LIBRARIES})

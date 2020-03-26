@@ -2,7 +2,7 @@
 
 #include <moveit/planning_interface/planning_interface.h>
 
-namespace legplan
+namespace cdrm_legged
 {
 /**
  * Handles performing motion planning queries.
