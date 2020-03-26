@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
-<robot name="example_quadruped" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:arg name="quadruped" default="true" />
-
-  <xacro:macro name="leg" params="name">
+<robot name="example_quadruped" xmlns:xabro="http://www.ros.org/wiki/xabro">
+  <xabro:mabro name="leg" params="name">
     <group name="${name}">
         <joint name="${name}_coxa_joint" />
         <joint name="${name}_femur_joint" />
@@ -16,32 +14,20 @@
     <disable_collisions link1="${name}_coxa_link" link2="${name}_femur_link" reason="Adjacent" />
     <disable_collisions link1="${name}_femur_link" link2="${name}_tibia_link" reason="Adjacent" />
     <disable_collisions link1="${name}_tibia_link" link2="${name}_foot_link" reason="Adjacent" />
-  </xacro:macro>
+  </xabro:mabro>
 
-  <xacro:leg name="al" />
-  <xacro:leg name="ar" />
-
-  <xacro:unless value="$(arg quadruped)">
-    <xacro:leg name="bl" />
-    <xacro:leg name="br" />
-  </xacro:unless>
-
-  <xacro:leg name="cl" />
-  <xacro:leg name="cr" />
+  <xabro:leg name="al" />
+  <xabro:leg name="ar" />
+  <xabro:leg name="bl" />
+  <xabro:leg name="br" />
 
   <virtual_joint name="odom_joint" child_link="base_link" parent_frame="odom" type="floating" />
 
   <group name="legs">
     <group name="al" />
     <group name="ar" />
-
-    <xacro:unless value="$(arg quadruped)">
-      <group name="bl" />
-      <group name="br" />
-    </xacro:unless>
-
-    <group name="cl" />
-    <group name="cr" />
+    <group name="bl" />
+    <group name="br" />
   </group>
 
   <group name="robot">
@@ -49,73 +35,37 @@
     <group name="legs" />
   </group>
 
-  <!-- Links found never to be in collision by the setup assistant -->
   <disable_collisions link1="al_coxa_link" link2="al_foot_link" reason="Never" />
   <disable_collisions link1="al_coxa_link" link2="al_tibia_link" reason="Never" />
-  <!--<disable_collisions link1="al_coxa_link" link2="bl_foot_link" reason="Never" />-->
-  <!--<disable_collisions link1="al_coxa_link" link2="br_coxa_link" reason="Never" />-->
-  <!--<disable_collisions link1="al_coxa_link" link2="br_femur_link" reason="Never" />-->
-  <disable_collisions link1="al_coxa_link" link2="cl_coxa_link" reason="Never" />
-  <disable_collisions link1="al_coxa_link" link2="cl_femur_link" reason="Never" />
-  <disable_collisions link1="al_coxa_link" link2="cr_coxa_link" reason="Never" />
-  <disable_collisions link1="al_coxa_link" link2="cr_femur_link" reason="Never" />
+  <disable_collisions link1="al_coxa_link" link2="bl_coxa_link" reason="Never" />
+  <disable_collisions link1="al_coxa_link" link2="bl_femur_link" reason="Never" />
+  <disable_collisions link1="al_coxa_link" link2="br_coxa_link" reason="Never" />
+  <disable_collisions link1="al_coxa_link" link2="br_femur_link" reason="Never" />
   <disable_collisions link1="al_femur_link" link2="al_foot_link" reason="Never" />
-  <!--<disable_collisions link1="al_femur_link" link2="br_coxa_link" reason="Never" />-->
-  <disable_collisions link1="al_femur_link" link2="cl_coxa_link" reason="Never" />
-  <disable_collisions link1="al_femur_link" link2="cr_coxa_link" reason="Never" />
-  <disable_collisions link1="al_femur_link" link2="cr_femur_link" reason="Never" />
-  <!--<disable_collisions link1="al_foot_link" link2="bl_coxa_link" reason="Never" />-->
-  <!--<disable_collisions link1="al_foot_link" link2="br_foot_link" reason="Never" />-->
-  <disable_collisions link1="al_foot_link" link2="cl_foot_link" reason="Never" />
-  <disable_collisions link1="al_foot_link" link2="cr_foot_link" reason="Never" />
-  <disable_collisions link1="al_tibia_link" link2="cr_coxa_link" reason="Never" />
+  <disable_collisions link1="al_femur_link" link2="bl_coxa_link" reason="Never" />
+  <disable_collisions link1="al_femur_link" link2="br_coxa_link" reason="Never" />
+  <disable_collisions link1="al_femur_link" link2="br_femur_link" reason="Never" />
+  <disable_collisions link1="al_foot_link" link2="bl_foot_link" reason="Never" />
+  <disable_collisions link1="al_foot_link" link2="br_foot_link" reason="Never" />
+  <disable_collisions link1="al_tibia_link" link2="br_coxa_link" reason="Never" />
   <disable_collisions link1="ar_coxa_link" link2="ar_foot_link" reason="Never" />
   <disable_collisions link1="ar_coxa_link" link2="ar_tibia_link" reason="Never" />
-  <!--<disable_collisions link1="ar_coxa_link" link2="bl_coxa_link" reason="Never" />-->
-  <!--<disable_collisions link1="ar_coxa_link" link2="bl_femur_link" reason="Never" />-->
-  <!--<disable_collisions link1="ar_coxa_link" link2="br_foot_link" reason="Never" />-->
-  <disable_collisions link1="ar_coxa_link" link2="cl_coxa_link" reason="Never" />
-  <disable_collisions link1="ar_coxa_link" link2="cl_femur_link" reason="Never" />
-  <disable_collisions link1="ar_coxa_link" link2="cl_tibia_link" reason="Never" />
-  <disable_collisions link1="ar_coxa_link" link2="cr_coxa_link" reason="Never" />
-  <disable_collisions link1="ar_coxa_link" link2="cr_femur_link" reason="Never" />
+  <disable_collisions link1="ar_coxa_link" link2="bl_coxa_link" reason="Never" />
+  <disable_collisions link1="ar_coxa_link" link2="bl_femur_link" reason="Never" />
+  <disable_collisions link1="ar_coxa_link" link2="bl_tibia_link" reason="Never" />
+  <disable_collisions link1="ar_coxa_link" link2="br_coxa_link" reason="Never" />
+  <disable_collisions link1="ar_coxa_link" link2="br_femur_link" reason="Never" />
   <disable_collisions link1="ar_femur_link" link2="ar_foot_link" reason="Never" />
-  <!--<disable_collisions link1="ar_femur_link" link2="bl_coxa_link" reason="Never" />-->
-  <!--<disable_collisions link1="ar_femur_link" link2="bl_femur_link" reason="Never" />-->
-  <disable_collisions link1="ar_femur_link" link2="cl_coxa_link" reason="Never" />
-  <disable_collisions link1="ar_femur_link" link2="cl_femur_link" reason="Never" />
-  <disable_collisions link1="ar_femur_link" link2="cr_coxa_link" reason="Never" />
-  <!--<disable_collisions link1="ar_foot_link" link2="bl_foot_link" reason="Never" />
-  <disable_collisions link1="ar_foot_link" link2="br_coxa_link" reason="Never" />-->
-  <disable_collisions link1="ar_foot_link" link2="cl_foot_link" reason="Never" />
-  <disable_collisions link1="ar_tibia_link" link2="cl_femur_link" reason="Never" />
-  <!--<disable_collisions link1="bl_coxa_link" link2="bl_foot_link" reason="Never" />
+  <disable_collisions link1="ar_femur_link" link2="bl_coxa_link" reason="Never" />
+  <disable_collisions link1="ar_femur_link" link2="bl_femur_link" reason="Never" />
+  <disable_collisions link1="ar_femur_link" link2="br_coxa_link" reason="Never" />
+  <disable_collisions link1="ar_foot_link" link2="bl_foot_link" reason="Never" />
+  <disable_collisions link1="ar_tibia_link" link2="bl_femur_link" reason="Never" />
+  <disable_collisions link1="bl_coxa_link" link2="bl_foot_link" reason="Never" />
   <disable_collisions link1="bl_coxa_link" link2="bl_tibia_link" reason="Never" />
-  <disable_collisions link1="bl_coxa_link" link2="br_coxa_link" reason="Never" />
-  <disable_collisions link1="bl_coxa_link" link2="br_femur_link" reason="Never" />
-  <disable_collisions link1="bl_coxa_link" link2="cl_foot_link" reason="Never" />
-  <disable_collisions link1="bl_coxa_link" link2="cr_coxa_link" reason="Never" />
-  <disable_collisions link1="bl_coxa_link" link2="cr_femur_link" reason="Never" />
+  <disable_collisions link1="bl_coxa_link" link2="br_foot_link" reason="Never" />
   <disable_collisions link1="bl_femur_link" link2="bl_foot_link" reason="Never" />
-  <disable_collisions link1="bl_femur_link" link2="br_coxa_link" reason="Never" />
-  <disable_collisions link1="bl_femur_link" link2="br_femur_link" reason="Never" />
-  <disable_collisions link1="bl_femur_link" link2="cr_coxa_link" reason="Never" />
-  <disable_collisions link1="bl_foot_link" link2="cl_coxa_link" reason="Never" />
-  <disable_collisions link1="bl_foot_link" link2="cr_foot_link" reason="Never" />
   <disable_collisions link1="br_coxa_link" link2="br_foot_link" reason="Never" />
   <disable_collisions link1="br_coxa_link" link2="br_tibia_link" reason="Never" />
-  <disable_collisions link1="br_coxa_link" link2="cl_coxa_link" reason="Never" />
-  <disable_collisions link1="br_coxa_link" link2="cl_femur_link" reason="Never" />
-  <disable_collisions link1="br_coxa_link" link2="cr_foot_link" reason="Never" />
   <disable_collisions link1="br_femur_link" link2="br_foot_link" reason="Never" />
-  <disable_collisions link1="br_femur_link" link2="cl_coxa_link" reason="Never" />
-  <disable_collisions link1="br_femur_link" link2="cl_femur_link" reason="Never" />
-  <disable_collisions link1="br_foot_link" link2="cr_coxa_link" reason="Never" />-->
-  <disable_collisions link1="cl_coxa_link" link2="cl_foot_link" reason="Never" />
-  <disable_collisions link1="cl_coxa_link" link2="cl_tibia_link" reason="Never" />
-  <disable_collisions link1="cl_coxa_link" link2="cr_foot_link" reason="Never" />
-  <disable_collisions link1="cl_femur_link" link2="cl_foot_link" reason="Never" />
-  <disable_collisions link1="cr_coxa_link" link2="cr_foot_link" reason="Never" />
-  <disable_collisions link1="cr_coxa_link" link2="cr_tibia_link" reason="Never" />
-  <disable_collisions link1="cr_femur_link" link2="cr_foot_link" reason="Never" />
 </robot>

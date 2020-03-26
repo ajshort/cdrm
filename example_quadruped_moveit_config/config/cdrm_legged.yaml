@@ -1,5 +1,9 @@
-groups:
-  - robot
-robot:
-  cdrm_filename: example_quadruped.cdrm
-  range: 0.2
+planner_configs:
+  robot:
+    legs:
+      al: example_quadruped.cdrm
+      ar: example_quadruped.cdrm
+      bl: example_quadruped.cdrm
+      br: example_quadruped.cdrm
+    range: 0.05
+    goal_bias: 0.05

@@ -87,22 +87,6 @@ Visualization Manager:
           Value: true
         br_tibia_link:
           Value: true
-        cl_coxa_link:
-          Value: true
-        cl_femur_link:
-          Value: true
-        cl_foot_link:
-          Value: true
-        cl_tibia_link:
-          Value: true
-        cr_coxa_link:
-          Value: true
-        cr_femur_link:
-          Value: true
-        cr_foot_link:
-          Value: true
-        cr_tibia_link:
-          Value: true
       Marker Scale: 0.25
       Name: TF
       Show Arrows: true
