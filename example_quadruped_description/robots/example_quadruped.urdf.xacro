@@ -17,19 +17,10 @@
     <origin xyz="0.12062 -0.070618 0.01525" rpy="0 0 ${-pi / 4}" />
   </xacro:example_quadruped_leg>
 
-  <xacro:unless value="$(arg quadruped)">
-    <xacro:example_quadruped_leg name="bl" parent="body_link">
-      <origin xyz="0 0.1133 0.01525" rpy="0 0 ${pi / 2}" />
-    </xacro:example_quadruped_leg>
-    <xacro:example_quadruped_leg name="br" parent="body_link">
-      <origin xyz="0 -0.1133 0.01525" rpy="0 0 ${-pi / 2}" />
-    </xacro:example_quadruped_leg>
-  </xacro:unless>
-
-  <xacro:example_quadruped_leg name="cl" parent="body_link">
+  <xacro:example_quadruped_leg name="bl" parent="body_link">
     <origin xyz="-0.12062 0.070618 0.01525" rpy="0 0 ${3 * pi / 4}" />
   </xacro:example_quadruped_leg>
-  <xacro:example_quadruped_leg name="cr" parent="body_link">
+  <xacro:example_quadruped_leg name="br" parent="body_link">
     <origin xyz="-0.12062 -0.070618 0.01525" rpy="0 0 ${-3 * pi / 4}" />
   </xacro:example_quadruped_leg>
 
