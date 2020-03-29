@@ -1,9 +1,11 @@
 #include <cdrm/cdrm.h>
 
 #include <cdrm/cdrm_serialisation.h>
+#include <cdrm/utils.h>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/filesystem.hpp>
 
 #include <ros/console.h>
 
@@ -57,9 +59,15 @@ bool Cdrm::save(const std::string &filename) const
 
 bool Cdrm::load(const std::string &filename)
 {
+  // If it's relative, then default to reading from ROS home.
+  boost::filesystem::path path(filename);
+
+  if (path.is_relative())
+    path = boost::filesystem::path(getRosHome() + filename);
+
   try
   {
-    std::ifstream ifs(filename);
+    std::ifstream ifs(path.c_str());
     boost::archive::binary_iarchive ia(ifs);
     ia >> *this;
   }

@@ -28,6 +28,7 @@ include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${OMPL_
 add_library(cdrm
   src/cdrm.cpp
   src/generator.cpp
+  src/utils.cpp
   src/voxelise.cpp
 )
 
