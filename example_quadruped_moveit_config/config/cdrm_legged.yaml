@@ -1,9 +1,11 @@
+cdrms:
+  example_quadruped_leg: example_quadruped.cdrm
 planner_configs:
   robot:
     legs:
-      al: example_quadruped.cdrm
-      ar: example_quadruped.cdrm
-      bl: example_quadruped.cdrm
-      br: example_quadruped.cdrm
+      al: example_quadruped_leg
+      ar: example_quadruped_leg
+      bl: example_quadruped_leg
+      br: example_quadruped_leg
     range: 0.05
     goal_bias: 0.05

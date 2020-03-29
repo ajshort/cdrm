@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<robot name="example_quadruped" xmlns:xabro="http://www.ros.org/wiki/xabro">
-  <xabro:mabro name="leg" params="name">
+<robot name="example_quadruped" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="leg" params="name">
     <group name="${name}">
         <joint name="${name}_coxa_joint" />
         <joint name="${name}_femur_joint" />
@@ -14,12 +14,12 @@
     <disable_collisions link1="${name}_coxa_link" link2="${name}_femur_link" reason="Adjacent" />
     <disable_collisions link1="${name}_femur_link" link2="${name}_tibia_link" reason="Adjacent" />
     <disable_collisions link1="${name}_tibia_link" link2="${name}_foot_link" reason="Adjacent" />
-  </xabro:mabro>
+  </xacro:macro>
 
-  <xabro:leg name="al" />
-  <xabro:leg name="ar" />
-  <xabro:leg name="bl" />
-  <xabro:leg name="br" />
+  <xacro:leg name="al" />
+  <xacro:leg name="ar" />
+  <xacro:leg name="bl" />
+  <xacro:leg name="br" />
 
   <virtual_joint name="odom_joint" child_link="base_link" parent_frame="odom" type="floating" />
 

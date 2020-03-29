@@ -103,9 +103,8 @@ private:
         continue;
 
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "map";
+      marker.header.frame_id = "odom";
       marker.header.stamp = ros::Time();
-      marker.ns = "contact_generator_node";
       marker.id = 0;
       marker.type = visualization_msgs::Marker::SPHERE_LIST;
       marker.action = visualization_msgs::Marker::ADD;
