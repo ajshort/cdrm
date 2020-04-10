@@ -15,6 +15,10 @@ catkin_package(
   LIBRARIES cdrm_legged
 )
 
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_library(cdrm_legged
