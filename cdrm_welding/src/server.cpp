@@ -28,7 +28,21 @@ private:
   void generateWeldingCdrm(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal)
   {
     WeldingCdrmGenerator generator(robot_model_, generate_feedback_, generate_result_);
-    generator.generate(goal, [this] { return generate_server_.isPreemptRequested(); });
+    bool success = generator.generate(goal, [this] { return generate_server_.isPreemptRequested(); });
+
+    if (success)
+    {
+      cdrm_welding_msgs::GenerateWeldingCdrmResult result;
+      generate_server_.setSucceeded(result);
+    }
+    else if (generate_server_.isPreemptRequested())
+    {
+      generate_server_.setPreempted();
+    }
+    else
+    {
+      generate_server_.setAborted();
+    }
   }
 
   bool planWeld(cdrm_welding_msgs::PlanWeld::Request &req,

@@ -40,7 +40,7 @@ WeldingCdrmGenerator::~WeldingCdrmGenerator()
 {
 }
 
-void WeldingCdrmGenerator::generate(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal,
+bool WeldingCdrmGenerator::generate(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal,
                                     const CancelledFn &is_cancelled)
 {
   goal_ = goal;
@@ -48,26 +48,12 @@ void WeldingCdrmGenerator::generate(const cdrm_welding_msgs::GenerateWeldingCdrm
 
   ROS_INFO("Generating welding CDRM");
 
-  generateNozzleCdrm(is_cancelled);
-  generateRobotCdrm(is_cancelled);
-
-  // Save the information.
-  ROS_INFO("Saving welding CDRM to '%s'...", goal->filename.c_str());
-
-  if (!cdrm_->save(goal->filename))
-    return;
-
-  ROS_INFO("Finished generating welding CDRM");
-}
-
-void WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
-{
   end_effector_ = robot_model_->getEndEffector(goal_->end_effector_name);
 
   if (!end_effector_)
   {
     ROS_ERROR("Could not find the end effector group '%s'", goal_->end_effector_name.c_str());
-    return;
+    return false;
   }
 
   // Get the flange link.
@@ -77,22 +63,40 @@ void WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
   if (!parent_group)
   {
     ROS_ERROR("Could not find the end effector parent group '%s'", parent.first.c_str());
-    return;
+    return false;
   }
 
   if (!(flange_link_ = parent_group->getLinkModel(parent.second)))
   {
     ROS_ERROR("Could not find the end effector parent link '%s'", parent.second.c_str());
-    return;
+    return false;
   }
 
   // Get the nozzle link.
   if (!(nozzle_link_ = robot_model_->getLinkModel(goal_->nozzle_link_name)))
   {
     ROS_ERROR("Could not find the nozzle link '%s'", goal_->nozzle_link_name.c_str());
-    return;
+    return false;
   }
 
+  if (!generateNozzleCdrm(is_cancelled))
+    return false;
+
+  if (!generateRobotCdrm(is_cancelled))
+    return false;
+
+  // Save the information.
+  ROS_INFO("Saving welding CDRM to '%s'...", goal->filename.c_str());
+
+  if (!cdrm_->save(goal->filename))
+    return false;
+
+  ROS_INFO("Finished generating welding CDRM");
+  return true;
+}
+
+bool WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
+{
   ROS_INFO("Generating CDRM for nozzle...");
 
   cdrm_->nozzle_cdrm_ = cdrm::Cdrm(goal_->nozzle_resolution);
@@ -112,7 +116,7 @@ void WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
   prm.setMaxNearestNeighbors(goal_->roadmap_k);
   prm.setProblemDefinition(ob::ProblemDefinitionPtr(new ob::ProblemDefinition(space_info)));
 
-  ob::PlannerTerminationCondition termination([&, this] { return prm.milestoneCount() >= goal_->roadmap_size; });
+  ob::PlannerTerminationCondition termination([&, this] { return prm.milestoneCount() >= goal_->nozzle_roadmap_size; });
   prm.growRoadmap(termination);
 
   ROS_INFO("Generated nozzle PRM, generating W-space mapping...");
@@ -144,31 +148,33 @@ void WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
     }
 
     if (is_cancelled())
-      return;
+      return false;
   }
 
   ROS_INFO("Finished generating nozzle CDRM");
-
+  return true;
 }
 
-void WeldingCdrmGenerator::generateRobotCdrm(const CancelledFn &is_cancelled)
+bool WeldingCdrmGenerator::generateRobotCdrm(const CancelledFn &is_cancelled)
 {
-  ROS_INFO("Generating robot CDRM...");
+  // ROS_INFO("Generating robot CDRM...");
 
-  cdrm_msgs::GenerateCdrmGoalPtr goal(new cdrm_msgs::GenerateCdrmGoal);
-  goal->group_name = goal_->group_name;
-  goal->roadmap_size = goal_->roadmap_size;
-  goal->roadmap_k = goal_->roadmap_k;
-  goal->resolution = goal_->robot_resolution;
-  goal->collide_edges = false;
-  goal->collide_tip_link = true;
+  // cdrm_msgs::GenerateCdrmGoalPtr goal(new cdrm_msgs::GenerateCdrmGoal);
+  // goal->group_name = goal_->group_name;
+  // goal->roadmap_size = goal_->roadmap_size;
+  // goal->roadmap_k = goal_->roadmap_k;
+  // goal->resolution = goal_->robot_resolution;
+  // goal->collide_edges = false;
+  // goal->collide_tip_link = true;
 
-  cdrm::Generator generator(robot_model_);
-  generator.setGoal(goal);
-  std::unique_ptr<cdrm::Cdrm> cdrm = generator.generate(is_cancelled);
-  cdrm_->nozzle_cdrm_ = *cdrm;
+  // cdrm::Generator generator(robot_model_);
+  // generator.setGoal(goal);
+  // std::unique_ptr<cdrm::Cdrm> cdrm = generator.generate(is_cancelled);
+  // cdrm_->robot_cdrm_ = *cdrm;
 
-  ROS_INFO("Finished generating robot CDRM");
+  // ROS_INFO("Finished generating robot CDRM");
+
+  return true;
 }
 
 static void applyNozzleConfigurationToState(moveit::core::RobotState &state,
@@ -199,7 +205,7 @@ cdrm::VertexDescriptor WeldingCdrmGenerator::addNozzleVertex(const ob::State *s)
   robot_state.update();
 
   // We use the flange as the contact position.
-  Eigen::Vector3d contact = robot_state.getGlobalLinkTransform(flange_link_).translation();
+  Eigen::Vector3d contact = robot_state.getGlobalLinkTransform(nozzle_link_->getParentLinkModel()).translation();
 
   // We don't need to check for duplicates as each vertex descriptor is only processed once.
   const auto vertex = boost::add_vertex(cdrm::Vertex{config}, nozzle_cdrm.roadmap_);
@@ -249,11 +255,11 @@ cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescr
 
   const auto edge = boost::add_edge(a, b, nozzle_cdrm.roadmap_).first;
 
-  moveit::core::RobotState sa(robot_model_);
-  moveit::core::RobotState sb(robot_model_);
-
   // TODO
   return edge;
+
+  moveit::core::RobotState sa(robot_model_);
+  moveit::core::RobotState sb(robot_model_);
 
   sa.setToDefaultValues();
   applyNozzleConfigurationToState(sa, nozzle_cdrm.roadmap_[a].q_, nozzle_link_);
@@ -269,7 +275,7 @@ cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescr
 
   const double max_displacement = (ta.translation() - tb.translation()).norm();
 
-  auto steps = static_cast<unsigned int>(max_displacement / goal_->nozzle_resolution);
+  auto steps = static_cast<unsigned int>(std::ceil(max_displacement / (0.5 * goal_->nozzle_resolution)));
   auto state = sa;
 
   const auto callback = [this, &edge, &nozzle_cdrm](const Eigen::Vector3d &p, const Eigen::Vector3d &n) {
@@ -306,8 +312,7 @@ cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescr
 
 bool WeldingCdrmGenerator::isNozzleStateValid(const ompl::base::State *state) const
 {
-  // Since we are only checking the nozzle link, it can't collide with anything - just
-  // return true.
+  // Since we are only checking the nozzle link, it can't collide with anything.
   return true;
 }
 }

@@ -54,7 +54,8 @@ template <class Archive>
 void serialize(Archive &ar, cdrm_welding::WeldingCdrm &cdrm, const unsigned int version)
 {
   ar & cdrm.nozzle_cdrm_;
+  ar & cdrm.tool_cdrm_;
+  ar & cdrm.robot_cdrm_;
 }
 }
 }
-

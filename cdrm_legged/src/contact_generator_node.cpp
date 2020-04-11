@@ -123,9 +123,11 @@ private:
       planning_scene_monitor::LockedPlanningSceneRW lock(psm_);
       cdrm_legged::LegConfigGenerator generator(lock);
 
+      ros::Time start_time = ros::Time::now();
       for (const auto &model : leg_models_)
       {
         const auto contacts = generator.generateLegConfigs(updated_tf, model);
+
 
         for (const auto vertex : contacts.contacts_)
         {
@@ -139,6 +141,8 @@ private:
           marker.points.push_back(point);
         }
       }
+      ros::Duration duration = ros::Time::now() - start_time;
+      std::cout << duration.toSec() << std::endl;
 
       body_tf_ = updated_tf;
 

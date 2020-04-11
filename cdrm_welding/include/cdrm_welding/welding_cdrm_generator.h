@@ -41,11 +41,11 @@ public:
 
   ~WeldingCdrmGenerator();
 
-  void generate(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal, const CancelledFn &is_cancelled);
+  bool generate(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal, const CancelledFn &is_cancelled);
 
 private:
-  void generateNozzleCdrm(const CancelledFn &is_cancelled);
-  void generateRobotCdrm(const CancelledFn &is_cancelled);
+  bool generateNozzleCdrm(const CancelledFn &is_cancelled);
+  bool generateRobotCdrm(const CancelledFn &is_cancelled);
 
   bool isNozzleStateValid(const ompl::base::State *state) const;
 
