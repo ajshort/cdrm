@@ -193,8 +193,20 @@ void voxelise(const shapes::Mesh &mesh, double resolution, const VoxelCallback &
         {
           const Eigen::Vector3d centre = min + resolution * Eigen::Vector3d(x, y, z);
 
+          // Have we already seen this cube? If so we don't need to check it again.
+          Key key;
+          key[0] = static_cast<std::int16_t>(std::round(centre(0) / resolution));
+          key[1] = static_cast<std::int16_t>(std::round(centre(1) / resolution));
+          key[2] = static_cast<std::int16_t>(std::round(centre(2) / resolution));
+
+          if (seen.count(key))
+            continue;
+
           if (isTriangleCubeIntersect(tri, centre, resolution))
+          {
             callback(centre, VectorMap(mesh.triangle_normals + 3 * triangle));
+            seen.insert(key);
+          }
         }
       }
     }
