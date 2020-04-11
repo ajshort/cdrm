@@ -25,8 +25,8 @@ def main():
                                    rx=Interval(min=-0.261799, max=0.261799),
                                    ry=Interval(min=-0.610865, max=0.610865),
                                    ctwd=Interval(min=0, max=0.015),
-                                   nozzle_resolution=0.0025,
-                                   tool_resolution=0.5,
+                                   nozzle_resolution=0.002,
+                                   tool_resolution=0.05,
                                    robot_resolution=0.2)
     client.send_goal(goal)
     client.wait_for_result()

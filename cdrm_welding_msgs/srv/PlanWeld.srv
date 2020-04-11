@@ -1,6 +1,9 @@
 # The name of the welding CDRM file to load.
 string cdrm_filename
 
+# The group name for the full planning group.
+string planning_group_name
+
 # The group name which controls the robot.
 string robot_group_name
 
@@ -22,6 +25,9 @@ geometry_msgs/Point[] weld_points
 # Unit vector directions indicating the nominal wire direction.
 geometry_msgs/Vector3[] weld_directions
 
+# Welding speed in m/s.
+float64 welding_speed
+
 # Weld range parameters
 cdrm_welding_msgs/IntervalWithOptimal rx_range
 cdrm_welding_msgs/IntervalWithOptimal ry_range
@@ -36,4 +42,4 @@ bool success
 float64 planning_time
 
 # The robot trajectory to weld to part.
-trajectory_msgs/JointTrajectory robot_trajectory
+moveit_msgs/RobotTrajectory robot_trajectory

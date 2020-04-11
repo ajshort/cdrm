@@ -2,6 +2,7 @@
 
 #include <cdrm/cdrm.h>
 #include <cdrm/voxelise.h>
+#include <cdrm_welding/kinematic_utils.h>
 #include <cdrm_welding/weld.h>
 #include <cdrm_welding/welding_cdrm.h>
 
@@ -10,6 +11,7 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <eigen_conversions/eigen_msg.h>
 #include <moveit/robot_state/robot_state.h>
+#include <moveit/robot_trajectory/robot_trajectory.h>
 #include <ros/console.h>
 #include <ros/time.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -106,7 +108,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   state.setToDefaultValues();
 
   // Voxelise around the toolpath every 5mm in its local frame.
-  cdrm::Cdrm nozzle_cdrm(cdrm.nozzle_cdrm_.resolution_);
+  const auto &nozzle_cdrm = cdrm.nozzle_cdrm_;
 
   const int steps = static_cast<int>(std::ceil(weld.getLength() / 0.005));
   const double step_size = weld.getLength() / steps;
@@ -125,7 +127,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
     cdrm::voxelise(
       state,
-      std::vector<const moveit::core::LinkModel *>({ workpiece_link_ }),
+      { workpiece_link_ },
       nozzle_cdrm.resolution_,
       [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
         nozzle_voxelised[step].insert(nozzle_cdrm.pointToKey(p));
@@ -210,9 +212,6 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
         continue;
 
       nozzle_path.push_back(*it);
-
-      ROS_INFO_STREAM(cdrm.nozzle_cdrm_.roadmap_[*it].q_.transpose());
-
       break;
     }
   }
@@ -223,7 +222,13 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
   ROS_INFO_STREAM("Finished planning after " << (ros::Time::now() - start_time).toSec() << "s");
 
-  return false;
+  // Create a trajectory.
+  robot_trajectory::RobotTrajectory trajectory(robot_model_, req.planning_group_name);
+
+  // TODO
+
+  trajectory.getRobotTrajectoryMsg(res.robot_trajectory);
+  return true;
 }
 
 void WeldPlanner::publishTargets(const Weld &weld)

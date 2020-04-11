@@ -24,18 +24,23 @@ def plan_weld():
 
     try:
         res = service(cdrm_filename=rospkg.get_ros_home() + '/m10ia_on_gantry.welding-cdrm',
+                      planning_group_name='robot_with_gantry',
                       robot_group_name='robot',
-                      robot_positioner_group_name='track',
+                      robot_positioner_group_name='gantry',
                       nozzle_link_name='nozzle_link',
                       workpiece_link_name='workpiece_link',
                       planning_timeout=60,
                       weld_points=weld_points,
                       weld_directions=weld_directions,
+                      welding_speed=0.01,
                       rx_range=work_range,
                       ry_range=travel_angle,
                       ctwd_range=ctwd_range)
     except rospy.ServiceException as e:
         print 'Service exception: ', e
+        return
+
+    print res
 
 def main():
     plan_weld()

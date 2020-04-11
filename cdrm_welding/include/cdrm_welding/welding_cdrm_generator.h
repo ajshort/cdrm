@@ -45,12 +45,16 @@ public:
 
 private:
   bool generateNozzleCdrm(const CancelledFn &is_cancelled);
+  bool generateToolCdrm(const CancelledFn &is_cancelled);
   bool generateRobotCdrm(const CancelledFn &is_cancelled);
 
   bool isNozzleStateValid(const ompl::base::State *state) const;
 
   cdrm::VertexDescriptor addNozzleVertex(const ompl::base::State *s);
   cdrm::EdgeDescriptor addNozzleEdge(const cdrm::VertexDescriptor &a, const cdrm::VertexDescriptor &b);
+
+  cdrm::VertexDescriptor addToolVertex(const ompl::base::State *s);
+  cdrm::EdgeDescriptor addToolEdge(const cdrm::VertexDescriptor &a, const cdrm::VertexDescriptor &b);
 
   moveit::core::RobotModelConstPtr robot_model_;
   planning_scene::PlanningScene planning_scene_;
@@ -62,6 +66,7 @@ private:
   const moveit::core::JointModelGroup *end_effector_;
   const moveit::core::LinkModel *flange_link_;
   const moveit::core::LinkModel *nozzle_link_;
+  std::vector<const moveit::core::LinkModel *> tool_links_;
   std::unique_ptr<WeldingCdrm> cdrm_;
 };
 }

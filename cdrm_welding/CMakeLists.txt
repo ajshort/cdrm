@@ -25,6 +25,7 @@ endif()
 include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS})
 
 add_executable(cdrm_welding_node
+  src/kinematic_utils.cpp
   src/server.cpp
   src/weld.cpp
   src/weld_planner.cpp
