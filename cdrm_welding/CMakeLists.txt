@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   cdrm_welding_msgs
   eigen_conversions
   moveit_core
+  moveit_msgs
   moveit_ros_planning
   roscpp
 )

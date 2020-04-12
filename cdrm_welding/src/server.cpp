@@ -7,6 +7,8 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/robot_state/conversions.h>
+#include <moveit_msgs/DisplayTrajectory.h>
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -22,6 +24,7 @@ public:
     , generate_server_(nh_, "generate_welding_cdrm", std::bind(&Server::generateWeldingCdrm, this, std::placeholders::_1), false)
     , plan_service_(nh_.advertiseService("plan_weld", &Server::planWeld, this))
     , targets_publisher_(nh_.advertise<visualization_msgs::MarkerArray>("target_markers", 1))
+    , display_trajectory_publisher_(nh_.advertise<moveit_msgs::DisplayTrajectory>("display_planned_path", 1))
   {
     generate_server_.start();
   }
@@ -51,7 +54,19 @@ private:
                 cdrm_welding_msgs::PlanWeld::Response &res)
   {
     planning_scene_monitor::LockedPlanningSceneRW locked_scene(psm_);
-    return WeldPlanner(locked_scene, targets_publisher_).plan(req, res);
+    bool success = WeldPlanner(locked_scene, targets_publisher_).plan(req, res);
+
+    if (!success)
+      return false;
+
+    // Publish the resulting trajectory.
+    moveit_msgs::DisplayTrajectory display;
+    display.model_id = locked_scene->getRobotModel()->getName();
+    robot_state::robotStateToRobotStateMsg(locked_scene->getCurrentState(), display.trajectory_start);
+    display.trajectory.push_back(res.robot_trajectory);
+    display_trajectory_publisher_.publish(display);
+
+    return true;
   }
 
   ros::NodeHandle nh_;
@@ -62,6 +77,7 @@ private:
   cdrm_welding_msgs::GenerateWeldingCdrmResult generate_result_;
   ros::ServiceServer plan_service_;
   ros::Publisher targets_publisher_;
+  ros::Publisher display_trajectory_publisher_;
 };
 }
 
