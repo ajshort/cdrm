@@ -231,22 +231,23 @@ bool WeldingCdrmGenerator::generateToolCdrm(const CancelledFn &is_cancelled)
 
 bool WeldingCdrmGenerator::generateRobotCdrm(const CancelledFn &is_cancelled)
 {
-  // ROS_INFO("Generating robot CDRM...");
+  ROS_INFO("Generating robot CDRM...");
 
-  // cdrm_msgs::GenerateCdrmGoalPtr goal(new cdrm_msgs::GenerateCdrmGoal);
-  // goal->group_name = goal_->group_name;
-  // goal->roadmap_size = goal_->roadmap_size;
-  // goal->roadmap_k = goal_->roadmap_k;
-  // goal->resolution = goal_->robot_resolution;
-  // goal->collide_edges = false;
-  // goal->collide_tip_link = true;
+  cdrm_msgs::GenerateCdrmGoalPtr goal(new cdrm_msgs::GenerateCdrmGoal);
+  goal->group_name = goal_->group_name;
+  goal->roadmap_size = goal_->robot_roadmap_size;
+  goal->roadmap_k = goal_->roadmap_k;
+  goal->resolution = goal_->robot_resolution;
+  goal->collide_edges = false;
+  goal->collide_tip_link = true;
 
-  // cdrm::Generator generator(robot_model_);
-  // generator.setGoal(goal);
-  // std::unique_ptr<cdrm::Cdrm> cdrm = generator.generate(is_cancelled);
-  // cdrm_->robot_cdrm_ = *cdrm;
+  cdrm::Generator generator(robot_model_);
+  generator.setGoal(goal);
 
-  // ROS_INFO("Finished generating robot CDRM");
+  std::unique_ptr<cdrm::Cdrm> cdrm = generator.generate(is_cancelled);
+  cdrm_->robot_cdrm_ = *cdrm;
+
+  ROS_INFO("Finished generating robot CDRM");
 
   return true;
 }
