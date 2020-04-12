@@ -13,8 +13,8 @@
   </group>
 
   <group name="robot_with_gantry">
-    <group name="robot" />
     <group name="gantry" />
+    <group name="robot" />
   </group>
 
   <group name="welding_torch">

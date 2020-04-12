@@ -27,7 +27,7 @@ def main():
                                    ctwd=Interval(min=0, max=0.015),
                                    nozzle_resolution=0.002,
                                    tool_resolution=0.05,
-                                   robot_resolution=0.2)
+                                   robot_resolution=0.25)
     client.send_goal(goal)
     client.wait_for_result()
 

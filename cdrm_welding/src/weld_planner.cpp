@@ -65,6 +65,12 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     return false;
   }
 
+  if (!(planning_group_ = robot_model_->getJointModelGroup(req.planning_group_name)))
+  {
+    ROS_ERROR("Could not find the planning group '%s'", req.planning_group_name.c_str());
+    return false;
+  }
+
   if (!(nozzle_link_ = robot_model_->getLinkModel(req.nozzle_link_name)))
   {
     ROS_ERROR("Could not find the nozzle link '%s'", req.nozzle_link_name.c_str());
@@ -225,16 +231,64 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     }
   }
 
-  // Get the CDRM for the toolpath and filter it.
-  // Get the CDRM for the manipulator and filter the toolpath CDRM edges to reachable ones only.
-  // See if we can create a path from near the start to near the end.
+  // Get where the robot CDRM is relative to.
+  const auto *robot_origin_link = planning_group_->getLinkModels().front();
+  const Eigen::Isometry3d &robot_origin_tf = planning_scene_->getCurrentState().getGlobalLinkTransform(robot_origin_link);
 
-  ROS_INFO_STREAM("Finished planning after " << (ros::Time::now() - start_time).toSec() << "s");
+  // Voxelise the workspace at the robot's CDRM resolution.
+  const auto &robot_cdrm = cdrm.robot_cdrm_;
 
-  // Create a trajectory.
+  std::set<cdrm::Key> robot_voxelised;
+
+  for (const auto &object : *(planning_scene_->getWorld()))
+  {
+    const auto &shapes = object.second->shapes_;
+    const auto &poses = object.second->shape_poses_;
+
+    for (std::size_t i = 0; i < shapes.size(); ++i)
+    {
+      if (shapes[i]->type != shapes::MESH)
+        continue;
+
+      const auto *mesh = static_cast<const shapes::Mesh *>(shapes[i].get());
+
+      cdrm::voxelise(
+        *mesh,
+        robot_cdrm.resolution_,
+        [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
+          robot_voxelised.insert(robot_cdrm.pointToKey(p));
+        },
+        poses[i]
+      );
+    }
+  }
+
   robot_trajectory::RobotTrajectory trajectory(robot_model_, req.planning_group_name);
 
-  // TODO
+  moveit::core::RobotState robot_state(robot_model_);
+  robot_state.setToDefaultValues();
+
+  // Go through the flange transforms and attempt to generate a matching path using the robot CDRM which is collision
+  // free.
+  EigenSTL::vector_Isometry3d flange_tfs;
+
+  for (std::size_t i = 0;  i < weld.getNumTargets(); ++i)
+    flange_tfs.push_back(weld.getTargetTransform(i));
+
+  for (const Eigen::Isometry3d &flange_tf : flange_tfs)
+  {
+    const Eigen::Vector3d translation = robot_origin_tf.inverse() * flange_tf.translation();
+    const auto key = robot_cdrm.pointToKey(translation);
+    const auto it = robot_cdrm.contacts_.find(key);
+
+    if (it == robot_cdrm.contacts_.end())
+      continue;
+
+    robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[it->second].q_);
+    trajectory.addSuffixWayPoint(robot_state, 0.5);
+  }
+
+  ROS_INFO_STREAM("Finished planning after " << (ros::Time::now() - start_time).toSec() << "s");
 
   trajectory.getRobotTrajectoryMsg(res.robot_trajectory);
   return true;

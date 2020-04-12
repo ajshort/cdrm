@@ -8,6 +8,7 @@ namespace moveit
 {
 namespace core
 {
+MOVEIT_CLASS_FORWARD(JointModelGroup);
 MOVEIT_CLASS_FORWARD(LinkModel);
 MOVEIT_CLASS_FORWARD(RobotModel);
 }
@@ -40,6 +41,7 @@ private:
   const moveit::core::RobotModelConstPtr robot_model_;
   ros::Publisher target_publisher_;
 
+  const moveit::core::JointModelGroup *planning_group_;
   const moveit::core::LinkModel *nozzle_link_;
 };
 }
