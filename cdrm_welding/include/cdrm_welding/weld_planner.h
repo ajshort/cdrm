@@ -13,6 +13,11 @@ MOVEIT_CLASS_FORWARD(RobotModel);
 }
 }
 
+namespace planning_scene
+{
+MOVEIT_CLASS_FORWARD(PlanningScene);
+}
+
 namespace cdrm_welding
 {
 class Weld;
@@ -23,7 +28,7 @@ class Weld;
 class WeldPlanner
 {
 public:
-  WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
+  WeldPlanner(const planning_scene::PlanningSceneConstPtr &planning_scene,
               const ros::Publisher &target_publisher);
 
   bool plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_welding_msgs::PlanWeld::Response &res);
@@ -31,10 +36,10 @@ public:
 private:
   void publishTargets(const Weld &weld);
 
-  moveit::core::RobotModelConstPtr robot_model_;
+  const planning_scene::PlanningSceneConstPtr planning_scene_;
+  const moveit::core::RobotModelConstPtr robot_model_;
   ros::Publisher target_publisher_;
 
   const moveit::core::LinkModel *nozzle_link_;
-  const moveit::core::LinkModel *workpiece_link_;
 };
 }

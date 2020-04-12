@@ -28,7 +28,6 @@ def plan_weld():
                       robot_group_name='robot',
                       robot_positioner_group_name='gantry',
                       nozzle_link_name='nozzle_link',
-                      workpiece_link_name='workpiece_link',
                       planning_timeout=60,
                       weld_points=weld_points,
                       weld_directions=weld_directions,

@@ -10,6 +10,7 @@
 #include <boost/graph/connected_components.hpp>
 #include <boost/graph/filtered_graph.hpp>
 #include <eigen_conversions/eigen_msg.h>
+#include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <ros/console.h>
@@ -20,9 +21,11 @@
 
 namespace cdrm_welding
 {
-WeldPlanner::WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
+WeldPlanner::WeldPlanner(const planning_scene::PlanningSceneConstPtr &planning_scene,
                          const ros::Publisher &target_publisher)
-  : robot_model_(robot_model), target_publisher_(target_publisher)
+  : planning_scene_(planning_scene)
+  , robot_model_(planning_scene_->getRobotModel())
+  , target_publisher_(target_publisher)
 {
 }
 
@@ -65,12 +68,6 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   if (!(nozzle_link_ = robot_model_->getLinkModel(req.nozzle_link_name)))
   {
     ROS_ERROR("Could not find the nozzle link '%s'", req.nozzle_link_name.c_str());
-    return false;
-  }
-
-  if (!(workpiece_link_ = robot_model_->getLinkModel(req.workpiece_link_name)))
-  {
-    ROS_ERROR("Could not find the workpiece link '%s'", req.workpiece_link_name.c_str());
     return false;
   }
 
@@ -122,20 +119,32 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   for (int step = 0; step <= steps; ++step)
   {
     const double t = static_cast<double>(step) / steps;
-    const Eigen::Isometry3d &workpiece_tf = state.getGlobalLinkTransform(workpiece_link_);
-    const Eigen::Isometry3d weld_tf = workpiece_tf * weld.getTransform(t);
 
-    cdrm::voxelise(
-      state,
-      { workpiece_link_ },
-      nozzle_cdrm.resolution_,
-      [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
-        nozzle_voxelised[step].insert(nozzle_cdrm.pointToKey(p));
-      },
-      weld_tf.inverse(),
-      &min_bound,
-      &max_bound
-    );
+    for (const auto &object : *(planning_scene_->getWorld()))
+    {
+      const auto &shapes = object.second->shapes_;
+      const auto &poses = object.second->shape_poses_;
+
+      for (std::size_t i = 0; i < shapes.size(); ++i)
+      {
+        if (shapes[i]->type != shapes::MESH)
+          continue;
+
+        const Eigen::Isometry3d weld_tf = poses[i] * weld.getTransform(t);
+        const auto *mesh = static_cast<const shapes::Mesh *>(shapes[i].get());
+
+        cdrm::voxelise(
+          *mesh,
+          nozzle_cdrm.resolution_,
+          [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
+            nozzle_voxelised[step].insert(nozzle_cdrm.pointToKey(p));
+          },
+          weld_tf.inverse(),
+          &min_bound,
+          &max_bound
+        );
+      }
+    }
   }
 
   // Now that we know which cells are occupied at each step, we need to convert this into the vertices and edges

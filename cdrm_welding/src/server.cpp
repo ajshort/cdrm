@@ -4,6 +4,7 @@
 #include <cdrm_welding/welding_cdrm_generator.h>
 #include <cdrm_welding_msgs/GenerateWeldingCdrmAction.h>
 #include <cdrm_welding_msgs/PlanWeld.h>
+#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <ros/ros.h>
@@ -17,6 +18,7 @@ public:
   Server(const moveit::core::RobotModelConstPtr &robot_model)
     : nh_("~")
     , robot_model_(robot_model)
+    , psm_(new planning_scene_monitor::PlanningSceneMonitor("robot_description"))
     , generate_server_(nh_, "generate_welding_cdrm", std::bind(&Server::generateWeldingCdrm, this, std::placeholders::_1), false)
     , plan_service_(nh_.advertiseService("plan_weld", &Server::planWeld, this))
     , targets_publisher_(nh_.advertise<visualization_msgs::MarkerArray>("target_markers", 1))
@@ -48,11 +50,13 @@ private:
   bool planWeld(cdrm_welding_msgs::PlanWeld::Request &req,
                 cdrm_welding_msgs::PlanWeld::Response &res)
   {
-    return WeldPlanner(robot_model_, targets_publisher_).plan(req, res);
+    planning_scene_monitor::LockedPlanningSceneRW locked_scene(psm_);
+    return WeldPlanner(locked_scene, targets_publisher_).plan(req, res);
   }
 
   ros::NodeHandle nh_;
   moveit::core::RobotModelConstPtr robot_model_;
+  planning_scene_monitor::PlanningSceneMonitorPtr psm_;
   actionlib::SimpleActionServer<cdrm_welding_msgs::GenerateWeldingCdrmAction> generate_server_;
   cdrm_welding_msgs::GenerateWeldingCdrmFeedback generate_feedback_;
   cdrm_welding_msgs::GenerateWeldingCdrmResult generate_result_;
