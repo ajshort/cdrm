@@ -295,13 +295,28 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   {
     const Eigen::Vector3d translation = robot_origin_tf.inverse() * flange_tf.translation();
     const auto key = robot_cdrm.pointToKey(translation);
-    const auto it = robot_cdrm.contacts_.find(key);
+    const auto found = robot_cdrm.contacts_.equal_range(key);
 
-    if (it == robot_cdrm.contacts_.end())
-      continue;
+    // Find the pose which has the closest angle to the goal flange TF.
+    auto best = found.first;
+    double bestScore = std::numeric_limits<double>::max();
 
-    // TODO find the pose with the closest angle.
-    robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[it->second].q_);
+    for (auto it = found.first; it != found.second; ++it)
+    {
+      robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[it->second].q_);
+      robot_state.update();
+
+      const Eigen::Isometry3d &close_flange_tf = robot_state.getGlobalLinkTransform(flange_link);
+      Eigen::Quaterniond quat = Eigen::Quaterniond::FromTwoVectors(flange_tf.linear().col(2), close_flange_tf.linear().col(2));
+      Eigen::AngleAxisd aa(quat);
+
+      if (std::abs(aa.angle()) < bestScore) {
+        best = it;
+        bestScore = std::abs(aa.angle());
+      }
+    }
+
+    robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[best->second].q_);
     robot_state.setFromIK(robot_group_, flange_tf);
     robot_state.update();
 
