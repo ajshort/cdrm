@@ -42,6 +42,7 @@ private:
   ros::Publisher target_publisher_;
 
   const moveit::core::JointModelGroup *planning_group_;
+  const moveit::core::JointModelGroup *robot_group_;
   const moveit::core::LinkModel *nozzle_link_;
 };
 }

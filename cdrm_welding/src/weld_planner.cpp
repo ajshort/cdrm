@@ -1,6 +1,7 @@
 #include <cdrm_welding/weld_planner.h>
 
 #include <cdrm/cdrm.h>
+#include <cdrm/utils.h>
 #include <cdrm/voxelise.h>
 #include <cdrm_welding/kinematic_utils.h>
 #include <cdrm_welding/weld.h>
@@ -11,12 +12,14 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <eigen_conversions/eigen_msg.h>
 #include <moveit/planning_scene/planning_scene.h>
+#include <moveit/robot_state/conversions.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <ros/console.h>
 #include <ros/time.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <algorithm>
 #include <iostream>
 
 namespace cdrm_welding
@@ -68,6 +71,12 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   if (!(planning_group_ = robot_model_->getJointModelGroup(req.planning_group_name)))
   {
     ROS_ERROR("Could not find the planning group '%s'", req.planning_group_name.c_str());
+    return false;
+  }
+
+  if (!(robot_group_ = robot_model_->getJointModelGroup(req.robot_group_name)))
+  {
+    ROS_ERROR("Could not find the robot group '%s'", req.robot_group_name.c_str());
     return false;
   }
 
@@ -263,8 +272,6 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     }
   }
 
-  robot_trajectory::RobotTrajectory trajectory(robot_model_, req.planning_group_name);
-
   moveit::core::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
 
@@ -272,8 +279,10 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   // free.
   EigenSTL::vector_Isometry3d flange_tfs;
 
-  for (std::size_t i = 0;  i < weld.getNumTargets(); ++i)
-    flange_tfs.push_back(weld.getTargetTransform(i));
+  for (int i = 0; i <= steps; ++i)
+    flange_tfs.push_back(weld.getTransform(static_cast<double>(i) / steps));
+
+  robot_trajectory::RobotTrajectory trajectory(robot_model_, req.planning_group_name);
 
   for (const Eigen::Isometry3d &flange_tf : flange_tfs)
   {
@@ -284,13 +293,28 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     if (it == robot_cdrm.contacts_.end())
       continue;
 
+    // TODO find the pose with the closest angle.
     robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[it->second].q_);
-    trajectory.addSuffixWayPoint(robot_state, 0.5);
+    robot_state.setFromIK(robot_group_, flange_tf);
+    robot_state.update();
+
+    trajectory.addSuffixWayPoint(robot_state, step_size / req.welding_speed);
   }
 
-  ROS_INFO_STREAM("Finished planning after " << (ros::Time::now() - start_time).toSec() << "s");
+  ros::Duration planning_duration = ros::Time::now() - start_time;
 
-  trajectory.getRobotTrajectoryMsg(res.robot_trajectory);
+  ROS_INFO_STREAM("Finished planning after " << planning_duration.toSec() << "s");
+
+  res.success = true;
+  res.planning_time = planning_duration.toSec();
+  res.trajectory.model_id = robot_model_->getName();
+
+  moveit::core::robotStateToRobotStateMsg(trajectory.getFirstWayPoint(), res.trajectory.trajectory_start);
+
+  moveit_msgs::RobotTrajectory trajectory_msg;
+  trajectory.getRobotTrajectoryMsg(trajectory_msg);
+  res.trajectory.trajectory.push_back(trajectory_msg);
+
   return true;
 }
 

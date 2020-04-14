@@ -39,4 +39,4 @@ bool success
 float64 planning_time
 
 # The robot trajectory to weld to part.
-moveit_msgs/RobotTrajectory robot_trajectory
+moveit_msgs/DisplayTrajectory trajectory

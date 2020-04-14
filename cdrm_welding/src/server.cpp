@@ -59,12 +59,7 @@ private:
     if (!success)
       return false;
 
-    // Publish the resulting trajectory.
-    moveit_msgs::DisplayTrajectory display;
-    display.model_id = locked_scene->getRobotModel()->getName();
-    robot_state::robotStateToRobotStateMsg(locked_scene->getCurrentState(), display.trajectory_start);
-    display.trajectory.push_back(res.robot_trajectory);
-    display_trajectory_publisher_.publish(display);
+    display_trajectory_publisher_.publish(res.trajectory);
 
     return true;
   }
