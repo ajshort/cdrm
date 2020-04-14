@@ -15,3 +15,11 @@ ROS packages for Contact Dynamic Roadmaps (CDRM). This repository contains the f
 ## Requirements
 
 * ROS Melodic
+
+## License
+
+* MIT
+
+## Author
+
+* Andrew Short (University of Wollongong) <andrewjshort@gmail.com>
