@@ -14,13 +14,6 @@
       <origin xyz="0 -2 2.5" />
       <material name="gray" />
     </visual>
-    <visual>
-      <geometry>
-        <box size="10 0.25 0.25" />
-      </geometry>
-      <origin xyz="0 2 2.5" />
-      <material name="gray" />
-    </visual>
   </link>
 
   <link name="carriage_link_1">
@@ -36,7 +29,7 @@
   <joint name="carriage_joint_1" type="prismatic">
     <parent link="base_link" />
     <child link="carriage_link_1" />
-    <limit lower="0" upper="10" velocity="1" effort="0" />
+    <limit lower="0" upper="5" velocity="1" effort="0" />
     <axis xyz="1 0 0" />
     <origin xyz="-5 0 0" />
   </joint>
@@ -57,7 +50,7 @@
   <joint name="carriage_joint_2" type="prismatic">
     <parent link="carriage_link_1" />
     <child link="carriage_link_2" />
-    <limit lower="-1.75" upper="1.75" velocity="0.5" effort="0" />
+    <limit lower="-1" upper="1" velocity="0.5" effort="0" />
     <axis xyz="0 1 0" />
   </joint>
 
