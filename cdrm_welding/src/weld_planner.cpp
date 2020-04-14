@@ -275,12 +275,19 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   moveit::core::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
 
+  // Figure out the nozzle to flange tf.
+  const auto *flange_link = robot_group_->getLinkModels().back();
+  const Eigen::Isometry3d nozzle_flange_tf = robot_state.getGlobalLinkTransform(nozzle_link_).inverse() *
+                                             robot_state.getGlobalLinkTransform(flange_link);
+
   // Go through the flange transforms and attempt to generate a matching path using the robot CDRM which is collision
   // free.
   EigenSTL::vector_Isometry3d flange_tfs;
 
   for (int i = 0; i <= steps; ++i)
-    flange_tfs.push_back(weld.getTransform(static_cast<double>(i) / steps));
+  {
+    flange_tfs.push_back(weld.getTransform(static_cast<double>(i) / steps) * nozzle_flange_tf);
+  }
 
   robot_trajectory::RobotTrajectory trajectory(robot_model_, req.planning_group_name);
 
