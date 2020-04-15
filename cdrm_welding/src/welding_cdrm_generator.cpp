@@ -374,12 +374,11 @@ cdrm::VertexDescriptor WeldingCdrmGenerator::addToolVertex(const ob::State *s)
 
   Eigen::VectorXd config(4);
 
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 4; ++i)
     config(i) = (*s->as<ob::RealVectorStateSpace::StateType>())[i];
 
-  auto &robot_state = planning_scene_.getCurrentStateNonConst();
+  auto robot_state = planning_scene_.getCurrentState();
   applyToolConfigurationToState(robot_state, config, nozzle_link_);
-  robot_state.update();
 
   // We use the flange as the contact position.
   Eigen::Vector3d contact = robot_state.getGlobalLinkTransform(flange_link_).translation();
@@ -420,7 +419,7 @@ cdrm::VertexDescriptor WeldingCdrmGenerator::addToolVertex(const ob::State *s)
       tool_cdrm.colliding_vertices_.insert({key, vertex});
     }
   };
-  cdrm::voxelise(robot_state, tool_links_, goal_->tool_resolution, callback, Eigen::Isometry3d());
+  cdrm::voxelise(robot_state, tool_links_, goal_->tool_resolution, callback, Eigen::Isometry3d::Identity());
 
   return vertex;
 }
