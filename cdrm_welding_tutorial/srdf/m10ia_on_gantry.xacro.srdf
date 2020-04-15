@@ -24,6 +24,8 @@
 
   <end_effector name="welding_torch" parent_link="robot_tool0" group="welding_torch" parent_group="robot" />
 
+  <disable_collisions link1="base_link" link2="workpiece_link" />
+
   <disable_collisions link1="base_link" link2="carriage_link_1" />
   <disable_collisions link1="carriage_link_1" link2="carriage_link_2" />
   <disable_collisions link1="carriage_link_1" link2="carriage_link_3" />

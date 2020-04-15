@@ -13,6 +13,9 @@ string robot_positioner_group_name
 # The name of the nozzle link (must be syummetrical around Z).
 string nozzle_link_name
 
+# The link to which the workpiece's collision meshes are attached.
+string workpiece_link_name
+
 # The planning timeout in seconds.
 float64 planning_timeout
 

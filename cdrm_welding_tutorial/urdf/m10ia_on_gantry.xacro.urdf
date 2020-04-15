@@ -130,7 +130,18 @@
     <origin xyz="0.05636777 0 0.23057450" rpy="0 ${radians(55)} 0" />
   </joint>
 
-  <link name="workpiece_link" />
+  <link name="workpiece_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://cdrm_welding_tutorial/meshes/l_profile.stl" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://cdrm_welding_tutorial/meshes/l_profile.stl" />
+      </geometry>
+    </collision>
+  </link>
 
   <joint name="base_workpiece_joint" type="fixed">
     <parent link="base_link" />

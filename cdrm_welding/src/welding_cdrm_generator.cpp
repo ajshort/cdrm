@@ -401,6 +401,7 @@ cdrm::VertexDescriptor WeldingCdrmGenerator::addToolVertex(const ob::State *s)
   const auto callback = [this, &vertex, &tool_cdrm](const Eigen::Vector3d &p, const Eigen::Vector3d &n)
   {
     auto key = tool_cdrm.pointToKey(p);
+
     auto existing = tool_cdrm.colliding_vertices_.equal_range(key);
     bool found = false;
 

@@ -30,6 +30,15 @@ void applyToolConfigurationToState(moveit::core::RobotState &state,
   tf.rotate(Eigen::AngleAxisd(q(2), Eigen::Vector3d::UnitZ()));
   tf.translation() -= q(3) * tf.linear().col(2);
 
-  state.updateStateWithLinkAt(ee, tf, true);
+  // Get the parent flange.
+  const auto *flange_link = ee;
+
+  while (flange_link->getParentJointModel()->getType() == moveit::core::JointModel::FIXED)
+    flange_link = flange_link->getParentLinkModel();
+
+  const Eigen::Isometry3d tf_nozzle_flange = state.getGlobalLinkTransform(ee).inverse() *
+                                             state.getGlobalLinkTransform(flange_link);
+
+  state.updateStateWithLinkAt(flange_link, tf * tf_nozzle_flange);
 }
 }

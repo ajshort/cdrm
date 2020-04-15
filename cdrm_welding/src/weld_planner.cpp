@@ -11,7 +11,7 @@
 #include <boost/graph/connected_components.hpp>
 #include <boost/graph/filtered_graph.hpp>
 #include <eigen_conversions/eigen_msg.h>
-#include <moveit/planning_scene/planning_scene.h>
+#include <geometric_shapes/shapes.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
@@ -24,10 +24,9 @@
 
 namespace cdrm_welding
 {
-WeldPlanner::WeldPlanner(const planning_scene::PlanningSceneConstPtr &planning_scene,
+WeldPlanner::WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
                          const ros::Publisher &target_publisher)
-  : planning_scene_(planning_scene)
-  , robot_model_(planning_scene_->getRobotModel())
+  : robot_model_(robot_model)
   , target_publisher_(target_publisher)
 {
 }
@@ -86,6 +85,12 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     return false;
   }
 
+  if (!(workpiece_link_ = robot_model_->getLinkModel(req.workpiece_link_name)))
+  {
+    ROS_ERROR("Could not find the workpiece link '%s'", req.workpiece_link_name.c_str());
+    return false;
+  }
+
   // Create weld from the targets.
   Weld weld;
 
@@ -116,8 +121,8 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   ros::Time limit_time = start_time + ros::Duration(req.planning_timeout);
 
   // Create a robot state.
-  moveit::core::RobotState state(robot_model_);
-  state.setToDefaultValues();
+  moveit::core::RobotState robot_state(robot_model_);
+  robot_state.setToDefaultValues();
 
   // Voxelise around the toolpath every 5mm in its local frame.
   const auto &tool_cdrm = cdrm.tool_cdrm_;
@@ -135,30 +140,29 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   {
     const double t = static_cast<double>(step) / steps;
 
-    for (const auto &object : *(planning_scene_->getWorld()))
+    const auto &shapes = workpiece_link_->getShapes();
+    const auto &poses = workpiece_link_->getCollisionOriginTransforms();
+
+    for (std::size_t i = 0; i < shapes.size(); ++i)
     {
-      const auto &shapes = object.second->shapes_;
-      const auto &poses = object.second->shape_poses_;
+      if (shapes[i]->type != shapes::MESH)
+        continue;
 
-      for (std::size_t i = 0; i < shapes.size(); ++i)
-      {
-        if (shapes[i]->type != shapes::MESH)
-          continue;
+      const Eigen::Isometry3d workpiece_tf = robot_state.getGlobalLinkTransform(workpiece_link_) * poses[i];
+      const Eigen::Isometry3d weld_tf = weld.getTransform(t);
 
-        const Eigen::Isometry3d weld_tf = poses[i] * weld.getTransform(t);
-        const auto *mesh = static_cast<const shapes::Mesh *>(shapes[i].get());
+      const auto *mesh = static_cast<const shapes::Mesh *>(shapes[i].get());
 
-        cdrm::voxelise(
-          *mesh,
-          tool_cdrm.resolution_,
-          [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
-            nozzle_voxelised[step].insert(tool_cdrm.pointToKey(p));
-          },
-          weld_tf.inverse(),
-          &min_bound,
-          &max_bound
-        );
-      }
+      cdrm::voxelise(
+        *mesh,
+        tool_cdrm.resolution_,
+        [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
+          nozzle_voxelised[step].insert(tool_cdrm.pointToKey(p));
+        },
+        weld_tf.inverse(),
+        &min_bound,
+        &max_bound
+      );
     }
   }
 
@@ -242,38 +246,36 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
   // Get where the robot CDRM is relative to.
   const auto *robot_origin_link = planning_group_->getLinkModels().front();
-  const Eigen::Isometry3d &robot_origin_tf = planning_scene_->getCurrentState().getGlobalLinkTransform(robot_origin_link);
+  const Eigen::Isometry3d &robot_origin_tf = robot_state.getGlobalLinkTransform(robot_origin_link);
 
   // Voxelise the workspace at the robot's CDRM resolution.
   const auto &robot_cdrm = cdrm.robot_cdrm_;
 
   std::set<cdrm::Key> robot_voxelised;
 
-  for (const auto &object : *(planning_scene_->getWorld()))
-  {
-    const auto &shapes = object.second->shapes_;
-    const auto &poses = object.second->shape_poses_;
+  // TODO
+  // for (const auto &object : *(planning_scene_->getWorld()))
+  // {
+  //   const auto &shapes = object.second->shapes_;
+  //   const auto &poses = object.second->shape_poses_;
 
-    for (std::size_t i = 0; i < shapes.size(); ++i)
-    {
-      if (shapes[i]->type != shapes::MESH)
-        continue;
+  //   for (std::size_t i = 0; i < shapes.size(); ++i)
+  //   {
+  //     if (shapes[i]->type != shapes::MESH)
+  //       continue;
 
-      const auto *mesh = static_cast<const shapes::Mesh *>(shapes[i].get());
+  //     const auto *mesh = static_cast<const shapes::Mesh *>(shapes[i].get());
 
-      cdrm::voxelise(
-        *mesh,
-        robot_cdrm.resolution_,
-        [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
-          robot_voxelised.insert(robot_cdrm.pointToKey(p));
-        },
-        poses[i]
-      );
-    }
-  }
-
-  moveit::core::RobotState robot_state(robot_model_);
-  robot_state.setToDefaultValues();
+  //     cdrm::voxelise(
+  //       *mesh,
+  //       robot_cdrm.resolution_,
+  //       [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
+  //         robot_voxelised.insert(robot_cdrm.pointToKey(p));
+  //       },
+  //       poses[i]
+  //     );
+  //   }
+  // }
 
   // Figure out the nozzle to flange tf.
   const auto *flange_link = robot_group_->getLinkModels().back();
@@ -307,12 +309,20 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     const auto found = robot_cdrm.contacts_.equal_range(key);
 
     // Find the pose which has the closest angle to the goal flange TF.
+    bool solved = false;
     auto best = found.first;
     double bestScore = std::numeric_limits<double>::max();
 
     for (auto it = found.first; it != found.second; ++it)
     {
       robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[it->second].q_);
+      robot_state.update();
+
+      if (!robot_state.setFromIK(robot_group_, flange_tf))
+        continue;
+
+      solved = true;
+
       robot_state.update();
 
       const Eigen::Isometry3d &close_flange_tf = robot_state.getGlobalLinkTransform(flange_link);
@@ -325,7 +335,11 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
       }
     }
 
+    if (!solved)
+      continue;
+
     robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[best->second].q_);
+    robot_state.update();
     robot_state.setFromIK(robot_group_, flange_tf);
     robot_state.update();
 
@@ -340,7 +354,8 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   res.planning_time = planning_duration.toSec();
   res.trajectory.model_id = robot_model_->getName();
 
-  moveit::core::robotStateToRobotStateMsg(trajectory.getFirstWayPoint(), res.trajectory.trajectory_start);
+  if (!trajectory.empty())
+    moveit::core::robotStateToRobotStateMsg(trajectory.getFirstWayPoint(), res.trajectory.trajectory_start);
 
   moveit_msgs::RobotTrajectory trajectory_msg;
   trajectory.getRobotTrajectoryMsg(trajectory_msg);
