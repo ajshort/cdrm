@@ -284,12 +284,18 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   // free.
   EigenSTL::vector_Isometry3d flange_tfs;
 
-  for (const auto &vertex : tool_path)
+  for (std::size_t i = 0; i < tool_path.size(); ++i)
   {
-    const Eigen::VectorXd &tool_q = tool_cdrm.roadmap_[vertex].q_;
-    applyToolConfigurationToState(robot_state, tool_q, nozzle_link_);
-    robot_state.update();
-    flange_tfs.push_back(robot_state.getGlobalLinkTransform(nozzle_link_));
+    const cdrm::VertexDescriptor vertex = tool_path[i];
+    const Eigen::VectorXd &q = tool_cdrm.roadmap_[vertex].q_;
+
+    Eigen::Isometry3d tf = weld.getTransform((i * step_size) / weld.getLength());
+    tf.rotate(Eigen::AngleAxisd(q(0), Eigen::Vector3d::UnitX()));
+    tf.rotate(Eigen::AngleAxisd(q(1), Eigen::Vector3d::UnitY()));
+    tf.rotate(Eigen::AngleAxisd(q(2), Eigen::Vector3d::UnitZ()));
+    tf.translation() -= q(3) * tf.linear().col(2);
+
+    flange_tfs.push_back(tf * nozzle_flange_tf);
   }
 
   robot_trajectory::RobotTrajectory trajectory(robot_model_, req.planning_group_name);
