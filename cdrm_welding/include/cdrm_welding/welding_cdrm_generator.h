@@ -44,14 +44,14 @@ public:
   bool generate(const cdrm_welding_msgs::GenerateWeldingCdrmGoalConstPtr &goal, const CancelledFn &is_cancelled);
 
 private:
-  bool generateNozzleCdrm(const CancelledFn &is_cancelled);
+  // bool generateNozzleCdrm(const CancelledFn &is_cancelled);
   bool generateToolCdrm(const CancelledFn &is_cancelled);
   bool generateRobotCdrm(const CancelledFn &is_cancelled);
 
   bool isNozzleStateValid(const ompl::base::State *state) const;
 
-  cdrm::VertexDescriptor addNozzleVertex(const ompl::base::State *s);
-  cdrm::EdgeDescriptor addNozzleEdge(const cdrm::VertexDescriptor &a, const cdrm::VertexDescriptor &b);
+  // cdrm::VertexDescriptor addNozzleVertex(const ompl::base::State *s);
+  // cdrm::EdgeDescriptor addNozzleEdge(const cdrm::VertexDescriptor &a, const cdrm::VertexDescriptor &b);
 
   cdrm::VertexDescriptor addToolVertex(const ompl::base::State *s);
   cdrm::EdgeDescriptor addToolEdge(const cdrm::VertexDescriptor &a, const cdrm::VertexDescriptor &b);

@@ -120,7 +120,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   state.setToDefaultValues();
 
   // Voxelise around the toolpath every 5mm in its local frame.
-  const auto &nozzle_cdrm = cdrm.nozzle_cdrm_;
+  const auto &tool_cdrm = cdrm.tool_cdrm_;
 
   const int steps = static_cast<int>(std::ceil(weld.getLength() / 0.005));
   const double step_size = weld.getLength() / steps;
@@ -128,8 +128,8 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   std::vector<std::set<cdrm::Key>> nozzle_voxelised(steps + 1);
 
   // We voxelise the AABB around the nozzle.
-  const Eigen::Vector3d &min_bound = cdrm.nozzle_cdrm_.aabb_.min();
-  const Eigen::Vector3d &max_bound = cdrm.nozzle_cdrm_.aabb_.max();
+  const Eigen::Vector3d &min_bound = tool_cdrm.aabb_.min();
+  const Eigen::Vector3d &max_bound = tool_cdrm.aabb_.max();
 
   for (int step = 0; step <= steps; ++step)
   {
@@ -150,9 +150,9 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
         cdrm::voxelise(
           *mesh,
-          nozzle_cdrm.resolution_,
+          tool_cdrm.resolution_,
           [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
-            nozzle_voxelised[step].insert(nozzle_cdrm.pointToKey(p));
+            nozzle_voxelised[step].insert(tool_cdrm.pointToKey(p));
           },
           weld_tf.inverse(),
           &min_bound,
@@ -171,8 +171,8 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   {
     for (const auto &key : nozzle_voxelised[i])
     {
-      auto v_range = cdrm.nozzle_cdrm_.colliding_vertices_.equal_range(key);
-      auto e_range = cdrm.nozzle_cdrm_.colliding_edges_.equal_range(key);
+      auto v_range = tool_cdrm.colliding_vertices_.equal_range(key);
+      auto e_range = tool_cdrm.colliding_edges_.equal_range(key);
 
       for (auto it = v_range.first; it != v_range.second; ++it)
         occupied_nozzle_vertices[i].insert(it->second);
@@ -186,7 +186,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   std::vector<std::vector<int>> connected_components(steps);
 
   for (int i = 0; i < steps; ++i)
-    connected_components[i].resize(boost::num_vertices(cdrm.nozzle_cdrm_.roadmap_));
+    connected_components[i].resize(boost::num_vertices(tool_cdrm.roadmap_));
 
   for (int i = 0; i < steps; ++i)
   {
@@ -216,7 +216,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
     VertexFilter vertex_filter(invalid_vertices);
     EdgeFilter edge_filter(invalid_edges);
-    FilteredGraph filtered(cdrm.nozzle_cdrm_.roadmap_, edge_filter, vertex_filter);
+    FilteredGraph filtered(tool_cdrm.roadmap_, edge_filter, vertex_filter);
 
     // Then use this to create a connected components.
     boost::connected_components(filtered, &connected_components[i][0]);
@@ -224,9 +224,9 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
   // Start at the start, and for each vertex in the start try and generate a path to the end through the pairwise
   // nozzle CDRMs.
-  std::vector<cdrm::VertexDescriptor> nozzle_path;
+  std::vector<cdrm::VertexDescriptor> tool_path;
 
-  const auto vertices = boost::vertices(cdrm.nozzle_cdrm_.roadmap_);
+  const auto vertices = boost::vertices(tool_cdrm.roadmap_);
 
   for (int i = 0; i <= steps; ++i)
   {
@@ -235,7 +235,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
       if (occupied_nozzle_vertices[i].count(*it))
         continue;
 
-      nozzle_path.push_back(*it);
+      tool_path.push_back(*it);
       break;
     }
   }
@@ -284,9 +284,12 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   // free.
   EigenSTL::vector_Isometry3d flange_tfs;
 
-  for (int i = 0; i <= steps; ++i)
+  for (const auto &vertex : tool_path)
   {
-    flange_tfs.push_back(weld.getTransform(static_cast<double>(i) / steps) * nozzle_flange_tf);
+    const Eigen::VectorXd &tool_q = tool_cdrm.roadmap_[vertex].q_;
+    applyToolConfigurationToState(robot_state, tool_q, nozzle_link_);
+    robot_state.update();
+    flange_tfs.push_back(robot_state.getGlobalLinkTransform(nozzle_link_));
   }
 
   robot_trajectory::RobotTrajectory trajectory(robot_model_, req.planning_group_name);

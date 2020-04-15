@@ -18,15 +18,13 @@ def main():
                                    group_name='robot_with_gantry',
                                    end_effector_name='welding_torch',
                                    nozzle_link_name='nozzle_link',
-                                   nozzle_roadmap_size=1000,
-                                   tool_roadmap_size=5000,
+                                   tool_roadmap_size=10000,
                                    robot_roadmap_size=100000,
                                    roadmap_k=10,
                                    rx=Interval(min=-0.261799, max=0.261799),
                                    ry=Interval(min=-0.610865, max=0.610865),
                                    ctwd=Interval(min=0, max=0.015),
-                                   nozzle_resolution=0.002,
-                                   tool_resolution=0.05,
+                                   tool_resolution=0.002,
                                    robot_resolution=0.2)
     client.send_goal(goal)
     client.wait_for_result()

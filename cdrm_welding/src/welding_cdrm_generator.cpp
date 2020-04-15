@@ -80,17 +80,14 @@ bool WeldingCdrmGenerator::generate(const cdrm_welding_msgs::GenerateWeldingCdrm
     return false;
   }
 
-  // Get the tool links - this is the flange link and everything below except the nozzle link.
+  // Get the tool links - this is the flange link and everything below.
   tool_links_.push_back(flange_link_);
 
   for (const auto &it : flange_link_->getAssociatedFixedTransforms())
-  {
-    if (it.first != nozzle_link_)
-      tool_links_.push_back(it.first);
-  }
+    tool_links_.push_back(it.first);
 
-  if (!generateNozzleCdrm(is_cancelled))
-    return false;
+  // if (!generateNozzleCdrm(is_cancelled))
+  //   return false;
 
   if (!generateToolCdrm(is_cancelled))
     return false;
@@ -108,65 +105,65 @@ bool WeldingCdrmGenerator::generate(const cdrm_welding_msgs::GenerateWeldingCdrm
   return true;
 }
 
-bool WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
-{
-  ROS_INFO("Generating CDRM for nozzle...");
+// bool WeldingCdrmGenerator::generateNozzleCdrm(const CancelledFn &is_cancelled)
+// {
+//   ROS_INFO("Generating CDRM for nozzle...");
 
-  cdrm_->nozzle_cdrm_ = cdrm::Cdrm(goal_->nozzle_resolution);
+//   cdrm_->nozzle_cdrm_ = cdrm::Cdrm(goal_->nozzle_resolution);
 
-  ob::StateSpacePtr state_space(new ob::RealVectorStateSpace);
-  state_space->as<ob::RealVectorStateSpace>()->addDimension("rx", goal_->rx.min, goal_->rx.max);
-  state_space->as<ob::RealVectorStateSpace>()->addDimension("ry", goal_->ry.min, goal_->ry.max);
-  state_space->as<ob::RealVectorStateSpace>()->addDimension("ctwd", goal_->ctwd.min, goal_->ctwd.max);
+//   ob::StateSpacePtr state_space(new ob::RealVectorStateSpace);
+//   state_space->as<ob::RealVectorStateSpace>()->addDimension("rx", goal_->rx.min, goal_->rx.max);
+//   state_space->as<ob::RealVectorStateSpace>()->addDimension("ry", goal_->ry.min, goal_->ry.max);
+//   state_space->as<ob::RealVectorStateSpace>()->addDimension("ctwd", goal_->ctwd.min, goal_->ctwd.max);
 
-  ob::SpaceInformationPtr space_info(new ob::SpaceInformation(ob::StateSpacePtr(state_space)));
-  space_info->setStateValidityChecker([](const ob::State *) { return true; });
-  space_info->setup();
+//   ob::SpaceInformationPtr space_info(new ob::SpaceInformation(ob::StateSpacePtr(state_space)));
+//   space_info->setStateValidityChecker([](const ob::State *) { return true; });
+//   space_info->setup();
 
-  ROS_INFO("Generating nozzle PRM...");
+//   ROS_INFO("Generating nozzle PRM...");
 
-  og::PRM prm(space_info);
-  prm.setMaxNearestNeighbors(goal_->roadmap_k);
-  prm.setProblemDefinition(ob::ProblemDefinitionPtr(new ob::ProblemDefinition(space_info)));
+//   og::PRM prm(space_info);
+//   prm.setMaxNearestNeighbors(goal_->roadmap_k);
+//   prm.setProblemDefinition(ob::ProblemDefinitionPtr(new ob::ProblemDefinition(space_info)));
 
-  ob::PlannerTerminationCondition termination([&, this] { return prm.milestoneCount() >= goal_->nozzle_roadmap_size; });
-  prm.growRoadmap(termination);
+//   ob::PlannerTerminationCondition termination([&, this] { return prm.milestoneCount() >= goal_->nozzle_roadmap_size; });
+//   prm.growRoadmap(termination);
 
-  ROS_INFO("Generated nozzle PRM, generating W-space mapping...");
+//   ROS_INFO("Generated nozzle PRM, generating W-space mapping...");
 
-  ob::PlannerData planner_data(space_info);
-  prm.getPlannerData(planner_data);
+//   ob::PlannerData planner_data(space_info);
+//   prm.getPlannerData(planner_data);
 
-  std::vector<cdrm::VertexDescriptor> vertices(planner_data.numVertices());
+//   std::vector<cdrm::VertexDescriptor> vertices(planner_data.numVertices());
 
-  auto last_update = ros::Time::now();
+//   auto last_update = ros::Time::now();
 
-  for (std::size_t i = 0; i < vertices.size(); ++i)
-  {
-    const auto *state = planner_data.getVertex(i).getState();
-    vertices[i] = addNozzleVertex(state);
+//   for (std::size_t i = 0; i < vertices.size(); ++i)
+//   {
+//     const auto *state = planner_data.getVertex(i).getState();
+//     vertices[i] = addNozzleVertex(state);
 
-    std::vector<unsigned int> edges;
-    planner_data.getEdges(i, edges);
+//     std::vector<unsigned int> edges;
+//     planner_data.getEdges(i, edges);
 
-    for (const auto &j : edges)
-    {
-      if (j < i)
-        addNozzleEdge(vertices[j], vertices[i]);
-    }
+//     for (const auto &j : edges)
+//     {
+//       if (j < i)
+//         addNozzleEdge(vertices[j], vertices[i]);
+//     }
 
-    if ((ros::Time::now() - last_update) > ros::Duration(5.0)) {
-      ROS_INFO("Processed %lu / %lu CDRM vertices", i + 1, vertices.size());
-      last_update = ros::Time::now();
-    }
+//     if ((ros::Time::now() - last_update) > ros::Duration(5.0)) {
+//       ROS_INFO("Processed %lu / %lu CDRM vertices", i + 1, vertices.size());
+//       last_update = ros::Time::now();
+//     }
 
-    if (is_cancelled())
-      return false;
-  }
+//     if (is_cancelled())
+//       return false;
+//   }
 
-  ROS_INFO("Finished generating nozzle CDRM");
-  return true;
-}
+//   ROS_INFO("Finished generating nozzle CDRM");
+//   return true;
+// }
 
 bool WeldingCdrmGenerator::generateToolCdrm(const CancelledFn &is_cancelled)
 {
@@ -252,124 +249,124 @@ bool WeldingCdrmGenerator::generateRobotCdrm(const CancelledFn &is_cancelled)
   return true;
 }
 
-cdrm::VertexDescriptor WeldingCdrmGenerator::addNozzleVertex(const ob::State *s)
-{
-  auto &nozzle_cdrm = cdrm_->nozzle_cdrm_;
+// cdrm::VertexDescriptor WeldingCdrmGenerator::addNozzleVertex(const ob::State *s)
+// {
+//   auto &nozzle_cdrm = cdrm_->nozzle_cdrm_;
 
-  Eigen::VectorXd config(3);
+//   Eigen::VectorXd config(3);
 
-  for (int i = 0; i < 3; ++i)
-    config(i) = (*s->as<ob::RealVectorStateSpace::StateType>())[i];
+//   for (int i = 0; i < 3; ++i)
+//     config(i) = (*s->as<ob::RealVectorStateSpace::StateType>())[i];
 
-  auto &robot_state = planning_scene_.getCurrentStateNonConst();
-  applyNozzleConfigurationToState(robot_state, config, nozzle_link_);
-  robot_state.update();
+//   auto &robot_state = planning_scene_.getCurrentStateNonConst();
+//   applyNozzleConfigurationToState(robot_state, config, nozzle_link_);
+//   robot_state.update();
 
-  // We use the flange as the contact position.
-  Eigen::Vector3d contact = robot_state.getGlobalLinkTransform(nozzle_link_->getParentLinkModel()).translation();
+//   // We use the flange as the contact position.
+//   Eigen::Vector3d contact = robot_state.getGlobalLinkTransform(nozzle_link_->getParentLinkModel()).translation();
 
-  // We don't need to check for duplicates as each vertex descriptor is only processed once.
-  const auto vertex = boost::add_vertex(cdrm::Vertex{config}, nozzle_cdrm.roadmap_);
-  const auto contact_key = nozzle_cdrm.pointToKey(contact);
-  nozzle_cdrm.contacts_.insert(std::make_pair(contact_key, vertex));
+//   // We don't need to check for duplicates as each vertex descriptor is only processed once.
+//   const auto vertex = boost::add_vertex(cdrm::Vertex{config}, nozzle_cdrm.roadmap_);
+//   const auto contact_key = nozzle_cdrm.pointToKey(contact);
+//   nozzle_cdrm.contacts_.insert(std::make_pair(contact_key, vertex));
 
-  // Update the workspace and contact bounds.
-  const auto distance = contact.norm();
+//   // Update the workspace and contact bounds.
+//   const auto distance = contact.norm();
 
-  nozzle_cdrm.min_contact_distance_ = std::min(nozzle_cdrm.min_contact_distance_, distance);
-  nozzle_cdrm.max_contact_distance_ = std::max(nozzle_cdrm.max_contact_distance_, distance);
+//   nozzle_cdrm.min_contact_distance_ = std::min(nozzle_cdrm.min_contact_distance_, distance);
+//   nozzle_cdrm.max_contact_distance_ = std::max(nozzle_cdrm.max_contact_distance_, distance);
 
-  nozzle_cdrm.workspace_min_ = contact.cwiseMin(nozzle_cdrm.workspace_min_);
-  nozzle_cdrm.workspace_max_ = contact.cwiseMax(nozzle_cdrm.workspace_max_);
+//   nozzle_cdrm.workspace_min_ = contact.cwiseMin(nozzle_cdrm.workspace_min_);
+//   nozzle_cdrm.workspace_max_ = contact.cwiseMax(nozzle_cdrm.workspace_max_);
 
-  // Voxelise the state.
-  const auto callback = [this, &vertex, &nozzle_cdrm](const Eigen::Vector3d &p, const Eigen::Vector3d &n)
-  {
-    auto key = nozzle_cdrm.pointToKey(p);
-    auto existing = nozzle_cdrm.colliding_vertices_.equal_range(key);
-    bool found = false;
+//   // Voxelise the state.
+//   const auto callback = [this, &vertex, &nozzle_cdrm](const Eigen::Vector3d &p, const Eigen::Vector3d &n)
+//   {
+//     auto key = nozzle_cdrm.pointToKey(p);
+//     auto existing = nozzle_cdrm.colliding_vertices_.equal_range(key);
+//     bool found = false;
 
-    for (auto it = existing.first; it != existing.second; ++it)
-    {
-      if (it->second == vertex)
-      {
-        found = true;
-        break;
-      }
-    }
+//     for (auto it = existing.first; it != existing.second; ++it)
+//     {
+//       if (it->second == vertex)
+//       {
+//         found = true;
+//         break;
+//       }
+//     }
 
-    if (!found)
-    {
-      nozzle_cdrm.aabb_.extend(p);
-      nozzle_cdrm.colliding_vertices_.insert({key, vertex});
-    }
-  };
-  cdrm::voxelise(robot_state, { nozzle_link_ }, goal_->nozzle_resolution, callback, Eigen::Isometry3d());
+//     if (!found)
+//     {
+//       nozzle_cdrm.aabb_.extend(p);
+//       nozzle_cdrm.colliding_vertices_.insert({key, vertex});
+//     }
+//   };
+//   cdrm::voxelise(robot_state, { nozzle_link_ }, goal_->nozzle_resolution, callback, Eigen::Isometry3d());
 
-  return vertex;
-}
+//   return vertex;
+// }
 
-cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescriptor &a,
-                                                         const cdrm::VertexDescriptor &b)
-{
-  auto &nozzle_cdrm = cdrm_->nozzle_cdrm_;
+// cdrm::EdgeDescriptor WeldingCdrmGenerator::addNozzleEdge(const cdrm::VertexDescriptor &a,
+//                                                          const cdrm::VertexDescriptor &b)
+// {
+//   auto &nozzle_cdrm = cdrm_->nozzle_cdrm_;
 
-  const auto edge = boost::add_edge(a, b, nozzle_cdrm.roadmap_).first;
+//   const auto edge = boost::add_edge(a, b, nozzle_cdrm.roadmap_).first;
 
-  // TODO
-  return edge;
+//   // TODO
+//   return edge;
 
-  moveit::core::RobotState sa(robot_model_);
-  moveit::core::RobotState sb(robot_model_);
+//   moveit::core::RobotState sa(robot_model_);
+//   moveit::core::RobotState sb(robot_model_);
 
-  sa.setToDefaultValues();
-  applyNozzleConfigurationToState(sa, nozzle_cdrm.roadmap_[a].q_, nozzle_link_);
-  sa.update();
+//   sa.setToDefaultValues();
+//   applyNozzleConfigurationToState(sa, nozzle_cdrm.roadmap_[a].q_, nozzle_link_);
+//   sa.update();
 
-  sb.setToDefaultValues();
-  applyNozzleConfigurationToState(sb, nozzle_cdrm.roadmap_[b].q_, nozzle_link_);
-  sb.update();
+//   sb.setToDefaultValues();
+//   applyNozzleConfigurationToState(sb, nozzle_cdrm.roadmap_[b].q_, nozzle_link_);
+//   sb.update();
 
-  // Get the displacement the two nozzle links positions.
-  const Eigen::Isometry3d &ta = sa.getGlobalLinkTransform(nozzle_link_->getParentLinkModel());
-  const Eigen::Isometry3d &tb = sb.getGlobalLinkTransform(nozzle_link_->getParentLinkModel());
+//   // Get the displacement the two nozzle links positions.
+//   const Eigen::Isometry3d &ta = sa.getGlobalLinkTransform(nozzle_link_->getParentLinkModel());
+//   const Eigen::Isometry3d &tb = sb.getGlobalLinkTransform(nozzle_link_->getParentLinkModel());
 
-  const double max_displacement = (ta.translation() - tb.translation()).norm();
+//   const double max_displacement = (ta.translation() - tb.translation()).norm();
 
-  auto steps = static_cast<unsigned int>(std::ceil(max_displacement / (0.5 * goal_->nozzle_resolution)));
-  auto state = sa;
+//   auto steps = static_cast<unsigned int>(std::ceil(max_displacement / (0.5 * goal_->nozzle_resolution)));
+//   auto state = sa;
 
-  const auto callback = [this, &edge, &nozzle_cdrm](const Eigen::Vector3d &p, const Eigen::Vector3d &n) {
-    auto key = nozzle_cdrm.pointToKey(p);
-    auto existing = nozzle_cdrm.colliding_edges_.equal_range(key);
-    bool found = false;
+//   const auto callback = [this, &edge, &nozzle_cdrm](const Eigen::Vector3d &p, const Eigen::Vector3d &n) {
+//     auto key = nozzle_cdrm.pointToKey(p);
+//     auto existing = nozzle_cdrm.colliding_edges_.equal_range(key);
+//     bool found = false;
 
-    for (auto it = existing.first; it != existing.second; ++it)
-    {
-      if (it->second == edge)
-      {
-        found = true;
-        break;
-      }
-    }
+//     for (auto it = existing.first; it != existing.second; ++it)
+//     {
+//       if (it->second == edge)
+//       {
+//         found = true;
+//         break;
+//       }
+//     }
 
-    if (!found)
-    {
-      nozzle_cdrm.aabb_.extend(p);
-      nozzle_cdrm.colliding_edges_.insert({key, edge});
-    }
-  };
+//     if (!found)
+//     {
+//       nozzle_cdrm.aabb_.extend(p);
+//       nozzle_cdrm.colliding_edges_.insert({key, edge});
+//     }
+//   };
 
-  for (unsigned int i = 0; i <= steps; ++i)
-  {
-    sa.interpolate(sb, static_cast<double>(i) / steps, state, end_effector_);
-    state.update();
+//   for (unsigned int i = 0; i <= steps; ++i)
+//   {
+//     sa.interpolate(sb, static_cast<double>(i) / steps, state, end_effector_);
+//     state.update();
 
-    cdrm::voxelise(state, { nozzle_link_ }, goal_->nozzle_resolution, callback);
-  }
+//     cdrm::voxelise(state, { nozzle_link_ }, goal_->nozzle_resolution, callback);
+//   }
 
-  return edge;
-}
+//   return edge;
+// }
 
 cdrm::VertexDescriptor WeldingCdrmGenerator::addToolVertex(const ob::State *s)
 {

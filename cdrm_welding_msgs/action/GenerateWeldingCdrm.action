@@ -11,7 +11,7 @@ string end_effector_name
 string nozzle_link_name
 
 # The number of vertices in the roadmap.
-uint32 nozzle_roadmap_size
+# uint32 nozzle_roadmap_size
 uint32 tool_roadmap_size
 uint32 robot_roadmap_size
 
@@ -24,7 +24,7 @@ cdrm_welding_msgs/Interval ry
 cdrm_welding_msgs/Interval ctwd
 
 # The resolutions for the various CDRMs
-float64 nozzle_resolution
+# float64 nozzle_resolution
 float64 tool_resolution
 float64 robot_resolution
 
