@@ -124,67 +124,81 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   moveit::core::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
 
-  // Voxelise around the toolpath every 5mm in its local frame.
   const auto &tool_cdrm = cdrm.tool_cdrm_;
 
-  const int steps = static_cast<int>(std::ceil(weld.getLength() / 0.005));
-  const double step_size = weld.getLength() / steps;
+  // Figure out the AABB which encompasses the welding path as well as the tool.
+  Eigen::AlignedBox3d aabb;
 
-  std::vector<std::set<cdrm::Key>> nozzle_voxelised(steps + 1);
-
-  // We voxelise the AABB around the nozzle.
-  const Eigen::Vector3d &min_bound = tool_cdrm.aabb_.min();
-  const Eigen::Vector3d &max_bound = tool_cdrm.aabb_.max();
-
-  for (int step = 0; step <= steps; ++step)
+  for (std::size_t i = 0; i < weld.getNumTargets(); ++i)
   {
-    const double t = static_cast<double>(step) / steps;
+    const Eigen::Isometry3d tf = robot_state.getGlobalLinkTransform(workpiece_link_) * weld.getTargetTransform(i);
+    aabb.extend(tf * tool_cdrm.aabb_.min());
+    aabb.extend(tf * tool_cdrm.aabb_.max());
+  }
 
-    const auto &shapes = workpiece_link_->getShapes();
-    const auto &poses = workpiece_link_->getCollisionOriginTransforms();
+  // Voxelise the workpiece in the desired region.
+  ROS_INFO_STREAM("Voxelising workpiece...");
 
-    for (std::size_t i = 0; i < shapes.size(); ++i)
-    {
-      if (shapes[i]->type != shapes::MESH)
-        continue;
+  std::set<cdrm::Key> workpiece_voxels;
 
-      const Eigen::Isometry3d workpiece_tf = robot_state.getGlobalLinkTransform(workpiece_link_) * poses[i];
-      const Eigen::Isometry3d weld_tf = weld.getTransform(t);
+  const auto &workpiece_shapes = workpiece_link_->getShapes();
+  const auto &workpiece_poses = workpiece_link_->getCollisionOriginTransforms();
 
-      const auto *mesh = static_cast<const shapes::Mesh *>(shapes[i].get());
+  for (std::size_t i = 0; i < workpiece_shapes.size(); ++i)
+  {
+    if (workpiece_shapes[i]->type != shapes::MESH)
+      continue;
 
-      cdrm::voxelise(
-        *mesh,
-        tool_cdrm.resolution_,
-        [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
-          nozzle_voxelised[step].insert(tool_cdrm.pointToKey(p));
-        },
-        weld_tf.inverse(),
-        &min_bound,
-        &max_bound
-      );
-    }
+    const Eigen::Isometry3d workpiece_tf = robot_state.getGlobalLinkTransform(workpiece_link_) * workpiece_poses[i];
+    const auto *mesh = static_cast<const shapes::Mesh *>(workpiece_shapes[i].get());
+
+    cdrm::voxelise(
+      *mesh,
+      tool_cdrm.resolution_,
+      [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
+        workpiece_voxels.insert(tool_cdrm.pointToKey(p));
+      },
+      workpiece_tf,
+      &aabb.min(),
+      &aabb.max()
+    );
   }
 
   // Now that we know which cells are occupied at each step, we need to convert this into the vertices and edges
   // which are invalid.
-  std::vector<std::set<cdrm::VertexDescriptor>> occupied_nozzle_vertices(nozzle_voxelised.size());
-  std::vector<std::set<cdrm::EdgeDescriptor>> occupied_nozzle_edges(nozzle_voxelised.size());
+  const int steps = static_cast<int>(std::ceil(weld.getLength() / 0.005));
+  const double step_size = weld.getLength() / steps;
 
-  for (std::size_t i = 0; i < nozzle_voxelised.size(); ++i)
+  ROS_INFO_STREAM("Filtering roadmap...");
+
+  std::vector<std::set<cdrm::VertexDescriptor>> occupied_nozzle_vertices(steps + 1);
+  std::vector<std::set<cdrm::EdgeDescriptor>> occupied_nozzle_edges(steps + 1);
+
+  for (std::size_t i = 0; i <= steps; ++i)
   {
-    for (const auto &key : nozzle_voxelised[i])
-    {
-      auto v_range = tool_cdrm.colliding_vertices_.equal_range(key);
-      auto e_range = tool_cdrm.colliding_edges_.equal_range(key);
+    const Eigen::Isometry3d &workpiece_tf = robot_state.getGlobalLinkTransform(workpiece_link_);
+    const Eigen::Isometry3d weld_tf = weld.getTransform(static_cast<double>(i) / steps);
 
-      for (auto it = v_range.first; it != v_range.second; ++it)
+    for (const auto &key : workpiece_voxels)
+    {
+      const Eigen::Vector3d point = (workpiece_tf * weld_tf).inverse() * tool_cdrm.keyToPoint(key);
+      const auto transformed_key = tool_cdrm.pointToKey(point);
+
+      if (!tool_cdrm.aabb_.contains(point))
+        continue;
+
+      auto vertices = tool_cdrm.colliding_vertices_.equal_range(key);
+      auto edges = tool_cdrm.colliding_edges_.equal_range(key);
+
+      for (auto it = vertices.first; it != vertices.second; ++it)
         occupied_nozzle_vertices[i].insert(it->second);
 
-      for (auto it = e_range.first; it != e_range.second; ++it)
+      for (auto it = edges.first; it != edges.second; ++it)
         occupied_nozzle_edges[i].insert(it->second);
     }
   }
+
+  ROS_INFO_STREAM("Creating connected components...");
 
   // We use the occupied cells at each pair of points to filter a CDRM to generate reachable pairs.
   std::vector<std::vector<int>> connected_components(steps);
@@ -215,9 +229,6 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
                    std::inserter(invalid_edges, invalid_edges.begin()));
 
     // Create a roadmap of items which are accessible from steps[i] and steps[i + 1].
-    const auto &from = nozzle_voxelised[i];
-    const auto &to = nozzle_voxelised[i + 1];
-
     VertexFilter vertex_filter(invalid_vertices);
     EdgeFilter edge_filter(invalid_edges);
     FilteredGraph filtered(tool_cdrm.roadmap_, edge_filter, vertex_filter);
