@@ -14,6 +14,11 @@ MOVEIT_CLASS_FORWARD(RobotModel);
 }
 }
 
+namespace planning_scene
+{
+MOVEIT_CLASS_FORWARD(PlanningScene);
+}
+
 namespace cdrm_welding
 {
 class Weld;
@@ -33,6 +38,7 @@ private:
   void publishTargets(const Weld &weld);
 
   const moveit::core::RobotModelConstPtr robot_model_;
+  const planning_scene::PlanningScenePtr planning_scene_;
   ros::Publisher target_publisher_;
 
   const moveit::core::JointModelGroup *planning_group_;

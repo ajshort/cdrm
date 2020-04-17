@@ -12,6 +12,7 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <eigen_conversions/eigen_msg.h>
 #include <geometric_shapes/shapes.h>
+#include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
@@ -27,6 +28,7 @@ namespace cdrm_welding
 WeldPlanner::WeldPlanner(const moveit::core::RobotModelConstPtr &robot_model,
                          const ros::Publisher &target_publisher)
   : robot_model_(robot_model)
+  , planning_scene_(new planning_scene::PlanningScene(robot_model_))
   , target_publisher_(target_publisher)
 {
 }
@@ -262,31 +264,24 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   // Voxelise the workspace at the robot's CDRM resolution.
   const auto &robot_cdrm = cdrm.robot_cdrm_;
 
-  std::set<cdrm::Key> robot_voxelised;
+  std::set<cdrm::VertexDescriptor> occupied_robot_vertices;
+  std::set<cdrm::EdgeDescriptor> occupied_robot_edges;
 
-  // TODO
-  // for (const auto &object : *(planning_scene_->getWorld()))
-  // {
-  //   const auto &shapes = object.second->shapes_;
-  //   const auto &poses = object.second->shape_poses_;
+  for (const auto &tool_key : workpiece_voxels)
+  {
+    const Eigen::Vector3d tool_p = tool_cdrm.keyToPoint(tool_key);
+    const Eigen::Vector3d robot_p = robot_origin_tf.inverse() * tool_p;
+    const auto robot_key = robot_cdrm.pointToKey(robot_p);
 
-  //   for (std::size_t i = 0; i < shapes.size(); ++i)
-  //   {
-  //     if (shapes[i]->type != shapes::MESH)
-  //       continue;
+    auto vertices = robot_cdrm.colliding_vertices_.equal_range(robot_key);
+    auto edges = robot_cdrm.colliding_edges_.equal_range(robot_key);
 
-  //     const auto *mesh = static_cast<const shapes::Mesh *>(shapes[i].get());
+    for (auto it = vertices.first; it != vertices.second; ++it)
+      occupied_robot_vertices.insert(it->second);
 
-  //     cdrm::voxelise(
-  //       *mesh,
-  //       robot_cdrm.resolution_,
-  //       [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
-  //         robot_voxelised.insert(robot_cdrm.pointToKey(p));
-  //       },
-  //       poses[i]
-  //     );
-  //   }
-  // }
+    for (auto it = edges.first; it != edges.second; ++it)
+      occupied_robot_edges.insert(it->second);
+  }
 
   // Figure out the nozzle to flange tf.
   const auto *flange_link = robot_group_->getLinkModels().back();
@@ -326,10 +321,17 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
     for (auto it = found.first; it != found.second; ++it)
     {
+      // if (occupied_robot_vertices.count(it->second))
+      //   continue;
+
       robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[it->second].q_);
       robot_state.update();
 
       if (!robot_state.setFromIK(robot_group_, flange_tf))
+        continue;
+
+      // The IK adjustment may have put the robot into collision, or the tool may collide with the robot.
+      if (planning_scene_->isStateColliding(robot_state, "", true))
         continue;
 
       solved = true;
