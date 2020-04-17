@@ -13,6 +13,11 @@
   </group>
 
   <group name="robot_with_gantry">
+    <link name="base_link" />
+    <link name="carriage_link_1" />
+    <link name="carriage_link_2" />
+    <link name="carriage_link_3" />
+
     <group name="gantry" />
     <group name="robot" />
   </group>
