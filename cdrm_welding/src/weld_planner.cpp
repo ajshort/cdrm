@@ -261,7 +261,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
   // Get where the robot CDRM is relative to.
   const auto *robot_origin_link = planning_group_->getLinkModels().front();
-  const Eigen::Isometry3d &robot_origin_tf = robot_state.getGlobalLinkTransform(robot_origin_link);
+  const Eigen::Isometry3d robot_origin_tf = robot_state.getGlobalLinkTransform(robot_origin_link);
 
   // Voxelise the workspace at the robot's CDRM resolution.
   const auto &robot_cdrm = cdrm.robot_cdrm_;
@@ -312,6 +312,20 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
   for (const Eigen::Isometry3d &flange_tf : flange_tfs)
   {
+    const double dt = step_size / req.welding_speed;
+
+    // If we can use the previous position then do so.
+    if (!trajectory.empty())
+    {
+      robot_state = trajectory.getLastWayPoint();
+
+      if (robot_state.setFromIK(robot_group_, flange_tf) && !planning_scene_->isStateColliding(robot_state))
+      {
+        trajectory.addSuffixWayPoint(robot_state, dt);
+        continue;
+      }
+    }
+
     const Eigen::Vector3d translation = robot_origin_tf.inverse() * flange_tf.translation();
     const auto key = robot_cdrm.pointToKey(translation);
     const auto found = robot_cdrm.contacts_.equal_range(key);
@@ -333,7 +347,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
         continue;
 
       // The IK adjustment may have put the robot into collision, or the tool may collide with the robot.
-      if (planning_scene_->isStateColliding(robot_state, "", true))
+      if (planning_scene_->isStateColliding(robot_state))
         continue;
 
       solved = true;
@@ -358,7 +372,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     robot_state.setFromIK(robot_group_, flange_tf);
     robot_state.update();
 
-    trajectory.addSuffixWayPoint(robot_state, step_size / req.welding_speed);
+    trajectory.addSuffixWayPoint(robot_state, dt);
   }
 
   ros::Duration planning_duration = ros::Time::now() - start_time;
