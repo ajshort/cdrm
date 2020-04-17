@@ -257,6 +257,8 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
     }
   }
 
+  ROS_INFO_STREAM("Created tool path with " << tool_path.size() << " designed flange poses");
+
   // Get where the robot CDRM is relative to.
   const auto *robot_origin_link = planning_group_->getLinkModels().front();
   const Eigen::Isometry3d &robot_origin_tf = robot_state.getGlobalLinkTransform(robot_origin_link);
