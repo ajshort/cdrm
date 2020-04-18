@@ -23,3 +23,25 @@ ROS packages for Contact Dynamic Roadmaps (CDRM). This repository contains the f
 ## Author
 
 * Andrew Short (University of Wollongong) <andrewjshort@gmail.com>
+
+## Usage
+
+### Legged Planning
+
+### Weld Planning
+
+To run the weld planning example, first generate the CDRM for the work cell:
+
+```
+$ roslaunch cdrm_welding_tutorial test_m10ia_on_gantry.launch
+$ rosrun cdrm_welding cdrm_welding_node
+$ rosrun cdrm_welding_tutorial generate_welding_cdrm.py
+```
+
+Then run the plan weld script and view it in RViz:
+
+```
+$ roslaunch cdrm_welding_tutorial test_m10ia_on_gantry.launch
+$ rosrun cdrm_welding cdrm_welding_node
+$ rosrun cdrm_welding_tutorial plan_weld.py
+```

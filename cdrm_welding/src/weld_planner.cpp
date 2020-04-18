@@ -363,8 +363,8 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
 
     for (auto it = found.first; it != found.second; ++it)
     {
-      // if (occupied_robot_vertices.count(it->second))
-      //   continue;
+      if (occupied_robot_vertices.count(it->second))
+        continue;
 
       robot_state.setJointGroupPositions(planning_group_, robot_cdrm.roadmap_[it->second].q_);
       robot_state.update();
