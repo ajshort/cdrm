@@ -18,7 +18,7 @@ def main():
                                    group_name='robot_with_gantry',
                                    end_effector_name='welding_torch',
                                    nozzle_link_name='nozzle_link',
-                                   tool_roadmap_size=10000,
+                                   tool_roadmap_size=2000,
                                    robot_roadmap_size=100000,
                                    roadmap_k=10,
                                    rx=Interval(min=-0.261799, max=0.261799),
