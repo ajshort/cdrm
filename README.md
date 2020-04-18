@@ -28,6 +28,12 @@ ROS packages for Contact Dynamic Roadmaps (CDRM). This repository contains the f
 
 ### Legged Planning
 
+Run the RViz demo with:
+
+```
+roslaunch example_quadruped_moveit_config demo.launch
+```
+
 ### Weld Planning
 
 To run the weld planning example, first generate the CDRM for the work cell:

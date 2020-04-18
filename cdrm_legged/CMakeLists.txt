@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   roscpp
 )
+find_package(ompl REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -19,17 +20,23 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS}  ${OMPL_INCLUDE_DIRS})
 
 add_library(cdrm_legged
-  src/contact_generator_node.cpp
+  src/conversions.cpp
   src/disjoint_sets.cpp
   src/leg_config_generator.cpp
   src/leg_model.cpp
+  src/leg_planner.cpp
+  src/motion_validator.cpp
+  src/planner.cpp
+  src/planning_context.cpp
+  src/stability_checker.cpp
+  src/state_validity_checker.cpp
 )
 
 add_dependencies(cdrm_legged ${cdrm_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(cdrm_legged ${catkin_LIBRARIES})
+target_link_libraries(cdrm_legged ${catkin_LIBRARIES} ${OMPL_LIBRARIES})
 
 add_library(cdrm_legged_moveit_plugin src/planner_manager.cpp)
 add_dependencies(cdrm_legged_moveit_plugin cdrm_legged)
