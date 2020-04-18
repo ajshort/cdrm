@@ -7,6 +7,7 @@
 #include <cdrm_welding/weld.h>
 #include <cdrm_welding/welding_cdrm.h>
 
+#include <angles/angles.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
 #include <boost/graph/filtered_graph.hpp>
@@ -114,7 +115,7 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   }
 
   // Publish the targets as a line strip.
-  publishTargets(weld);
+  // publishTargets(weld);
 
   // Start the actual planning process.
   ROS_INFO("Starting planning...");
@@ -160,9 +161,9 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
       [&](const Eigen::Vector3d &p, const Eigen::Vector3d &) {
         workpiece_voxels.insert(tool_cdrm.pointToKey(p));
       },
-      workpiece_tf,
-      &aabb.min(),
-      &aabb.max()
+      workpiece_tf
+      // &aabb.min(),
+      // &aabb.max()
     );
   }
 
@@ -189,8 +190,8 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
       if (!tool_cdrm.aabb_.contains(point))
         continue;
 
-      auto vertices = tool_cdrm.colliding_vertices_.equal_range(key);
-      auto edges = tool_cdrm.colliding_edges_.equal_range(key);
+      auto vertices = tool_cdrm.colliding_vertices_.equal_range(transformed_key);
+      auto edges = tool_cdrm.colliding_edges_.equal_range(transformed_key);
 
       for (auto it = vertices.first; it != vertices.second; ++it)
         occupied_nozzle_vertices[i].insert(it->second);
@@ -243,16 +244,41 @@ bool WeldPlanner::plan(const cdrm_welding_msgs::PlanWeld::Request &req, cdrm_wel
   // nozzle CDRMs.
   std::vector<cdrm::VertexDescriptor> tool_path;
 
-  const auto vertices = boost::vertices(tool_cdrm.roadmap_);
+  // We rank the vertices based on their closeness to identify Rx / Ry / CTWD.
+  auto vertices = boost::vertices(tool_cdrm.roadmap_);
+
+  std::vector<cdrm::VertexDescriptor> sorted_vertices;
+  sorted_vertices.reserve(boost::num_vertices(tool_cdrm.roadmap_));
+
+  for (auto it = vertices.first; it != vertices.second; ++it)
+    sorted_vertices.push_back(*it);
+
+  std::sort(sorted_vertices.begin(), sorted_vertices.end(), [&](const cdrm::VertexDescriptor &a, const cdrm::VertexDescriptor &b) {
+    const auto &qa = tool_cdrm.roadmap_[a].q_;
+    const auto &qb = tool_cdrm.roadmap_[b].q_;
+
+    return std::make_tuple(std::abs(qa(0)) + std::abs(qa(1)), std::abs(qa(3))) <
+           std::make_tuple(std::abs(qb(0)) + std::abs(qb(1)), std::abs(qb(3)));
+  });
 
   for (int i = 0; i <= steps; ++i)
   {
-    for (auto it = vertices.first; it != vertices.second; ++it)
+    for (const auto &vertex : sorted_vertices)
     {
-      if (occupied_nozzle_vertices[i].count(*it))
+      if (occupied_nozzle_vertices[i].count(vertex))
         continue;
 
-      tool_path.push_back(*it);
+      // If we already have some stuff, then make sure respect change limits.
+      if (!tool_path.empty())
+      {
+        const auto &qa = tool_cdrm.roadmap_[tool_path.back()].q_;
+        const auto &qb = tool_cdrm.roadmap_[vertex].q_;
+
+        if (std::abs(qa(2) - qb(2)) / (step_size * 1000) > angles::from_degrees(2.5))
+          continue;
+      }
+
+      tool_path.push_back(vertex);
       break;
     }
   }
