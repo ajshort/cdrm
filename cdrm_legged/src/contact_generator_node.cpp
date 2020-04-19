@@ -128,11 +128,12 @@ private:
       {
         const auto contacts = generator.generateLegConfigs(updated_tf, model);
 
-
         for (const auto vertex : contacts.contacts_)
         {
           const Eigen::VectorXd &q = model.cdrm_->getVertexConfig(vertex);
           const Eigen::Isometry3d contact_tf = updated_tf * model.tf_ * model.getTipTransform(q);
+
+          std::cout << contact_tf.translation().transpose() << std::endl;
 
           geometry_msgs::Point point;
           point.x = contact_tf.translation().x();
@@ -141,8 +142,6 @@ private:
           marker.points.push_back(point);
         }
       }
-      ros::Duration duration = ros::Time::now() - start_time;
-      std::cout << duration.toSec() << std::endl;
 
       body_tf_ = updated_tf;
 

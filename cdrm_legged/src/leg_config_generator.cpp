@@ -88,7 +88,7 @@ LegConfigs LegConfigGenerator::generateLegConfigs(const Eigen::Isometry3d &body_
     const Eigen::Vector3d &normal = normals.at(contact);
     const double angle = std::acos(direction.dot(-normal));
 
-    if (angle > angles::from_degrees(15))
+    if (angle > angles::from_degrees(45))
       continue;
 
     contact_angles[contact] = angle;
