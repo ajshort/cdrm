@@ -20,8 +20,6 @@ class PlanningContext;
  */
 struct LegConfigs
 {
-  LegConfigs(std::size_t size);
-
   /**
    * Valid CDRM configuration indices.
    */
@@ -33,11 +31,9 @@ struct LegConfigs
   EigenSTL::vector_Vector3d normals_;
 
   /**
-   * CDRM configurations which are not in contact or collision.
+   * For each contact, a list of free configurations that can be reached through the CDRM.
    */
-  boost::dynamic_bitset<> free_;
-
-  DisjointSets disjoints_;
+  std::vector<std::set<unsigned int>> reachable_;
 };
 
 /**

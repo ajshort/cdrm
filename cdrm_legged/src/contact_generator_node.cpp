@@ -11,6 +11,7 @@
 #include <ros/ros.h>
 #include <visualization_msgs/InteractiveMarkerUpdate.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 static const std::string TOPIC = "/rviz_moveit_motion_planning_display/robot_interaction_interactive_marker_topic/update";
 static const std::string MARKER_NAME = "JJ:start_base_link";
@@ -21,7 +22,7 @@ public:
   ContactGeneratorNode()
     : nh_("move_group")
     , subscriber_(nh_.subscribe(TOPIC, 100, &ContactGeneratorNode::onMarkerUpdated, this))
-    , publisher_(nh_.advertise<visualization_msgs::Marker>("rviz_contacts", 0))
+    , publisher_(nh_.advertise<visualization_msgs::MarkerArray>("rviz_contacts", 0))
     , psm_(new planning_scene_monitor::PlanningSceneMonitor("robot_description"))
   {
     psm_->startSceneMonitor();
@@ -102,31 +103,33 @@ private:
       if (pose.name != MARKER_NAME)
         continue;
 
-      visualization_msgs::Marker marker;
-      marker.header.frame_id = "odom";
-      marker.header.stamp = ros::Time();
-      marker.id = 0;
-      marker.type = visualization_msgs::Marker::SPHERE_LIST;
-      marker.action = visualization_msgs::Marker::ADD;
-      marker.scale.x = 0.025;
-      marker.scale.y = 0.025;
-      marker.scale.z = 0.025;
-      marker.color.a = 1.0;
-      marker.color.r = 1.0;
-
       Eigen::Isometry3d updated_tf;
       tf::poseMsgToEigen(pose.pose, updated_tf);
 
       if (body_tf_.isApprox(updated_tf))
         continue;
 
+      visualization_msgs::MarkerArray marker_array;
+
       planning_scene_monitor::LockedPlanningSceneRW lock(psm_);
       cdrm_legged::LegConfigGenerator generator(lock);
 
-      ros::Time start_time = ros::Time::now();
-      for (const auto &model : leg_models_)
+      for (std::size_t i = 0; i < leg_models_.size(); ++i)
       {
+        const auto &model = leg_models_[i];
         const auto contacts = generator.generateLegConfigs(updated_tf, model);
+
+        visualization_msgs::Marker marker;
+        marker.header.frame_id = "odom";
+        marker.header.stamp = ros::Time();
+        marker.id = i;
+        marker.type = visualization_msgs::Marker::SPHERE_LIST;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.scale.x = 0.02;
+        marker.scale.y = 0.02;
+        marker.scale.z = 0.02;
+        marker.color.a = 1.0;
+        marker.color.r = 0.5 + (0.25 * i);
 
         for (const auto vertex : contacts.contacts_)
         {
@@ -139,11 +142,14 @@ private:
           point.z = contact_tf.translation().z();
           marker.points.push_back(point);
         }
+
+        marker_array.markers.push_back(marker);
       }
 
       body_tf_ = updated_tf;
 
-      publisher_.publish(marker);
+      publisher_.publish(marker_array);
+
       return;
     }
   }

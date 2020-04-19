@@ -3,7 +3,8 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /MarkerArray1
       Splitter Ratio: 0.5
     Tree Height: 469
   - Class: rviz/Selection
@@ -304,12 +305,12 @@ Visualization Manager:
         Show Robot Visual: false
       Value: true
       Velocity_Scaling_Factor: 1
-    - Class: rviz/Marker
+    - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /move_group/rviz_contacts
-      Name: Marker
+      Name: MarkerArray
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -340,25 +341,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.562411785125732
+      Distance: 4.6214189529418945
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.47940513491630554
-        Y: 0.704575777053833
-        Z: -0.09644998610019684
+        X: -0.01533223781734705
+        Y: 0.5448396801948547
+        Z: -0.2419435977935791
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4697980582714081
+      Pitch: 0.6247981190681458
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.7603978514671326
+      Yaw: 0.8953977823257446
     Saved: ~
 Window Geometry:
   Displays:
