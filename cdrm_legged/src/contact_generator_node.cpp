@@ -133,8 +133,6 @@ private:
           const Eigen::VectorXd &q = model.cdrm_->getVertexConfig(vertex);
           const Eigen::Isometry3d contact_tf = updated_tf * model.tf_ * model.getTipTransform(q);
 
-          std::cout << contact_tf.translation().transpose() << std::endl;
-
           geometry_msgs::Point point;
           point.x = contact_tf.translation().x();
           point.y = contact_tf.translation().y();
