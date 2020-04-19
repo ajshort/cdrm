@@ -19,7 +19,7 @@ def main():
                             roadmap_k=10,
                             roadmap_size=5000,
                             resolution=0.05,
-                            collide_edges=False,
+                            collide_edges=True,
                             collide_tip_link=False)
     client.send_goal(goal)
     client.wait_for_result()
