@@ -25,8 +25,6 @@ namespace ob = ompl::base;
 
 namespace cdrm_legged
 {
-static const double HACK_Z_AMOUNT = 0.05;
-
 struct Planner::Node
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -280,13 +278,6 @@ bool Planner::checkMotion(Node *from, Node *to)
       state_.setJointGroupPositions(leg.jmg_, roadmap[candidate].q_);
       state_.update();
 
-      // Make sure we can reach up 2cm.
-      auto hack_tf = state_.getGlobalLinkTransform(leg.tip_link_);
-      hack_tf.translation().z() += HACK_Z_AMOUNT;
-
-      if (!state_.setFromIK(leg.jmg_, hack_tf))
-        continue;
-
       Contacts contacts;
 
       state_.setJointGroupPositions(leg.jmg_, roadmap[candidate].q_);
@@ -469,13 +460,6 @@ bool Planner::createContact(const Eigen::Isometry3d &body_tf, int leg_index, Nod
     state_.setJointPositions(context_->getBodyJoint(), body_tf);
     state_.setJointGroupPositions(leg.jmg_, roadmap[candidate].q_);
     state_.update();
-
-    // Make sure we can reach up 2cm.
-    auto hack_tf = state_.getGlobalLinkTransform(leg.tip_link_);
-    hack_tf.translation().z() += HACK_Z_AMOUNT;
-
-    if (!state_.setFromIK(leg.jmg_, hack_tf))
-      continue;
 
     state_.setJointGroupPositions(leg.jmg_, roadmap[candidate].q_);
 
