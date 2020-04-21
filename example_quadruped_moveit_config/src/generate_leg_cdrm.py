@@ -18,7 +18,7 @@ def main():
     goal = GenerateCdrmGoal(group_name='al',
                             roadmap_k=10,
                             roadmap_size=5000,
-                            resolution=0.05,
+                            resolution=0.025,
                             collide_edges=True,
                             collide_tip_link=False)
     client.send_goal(goal)

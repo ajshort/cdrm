@@ -9,6 +9,9 @@
 #include <ompl/geometric/planners/prm/PRM.h>
 #include <ros/console.h>
 
+#include <queue>
+#include <utility>
+
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
@@ -22,6 +25,41 @@ Generator::Generator(const moveit::core::RobotModelConstPtr &robot_model)
 Generator::~Generator()
 {
 }
+
+class GeneratorStateSpace : public ob::RealVectorStateSpace
+{
+public:
+  GeneratorStateSpace(const robot_model::RobotModelConstPtr &robot_model,
+                      const moveit::core::JointModelGroup *joint_model_group)
+    : robot_model_(robot_model)
+    , joint_model_group_(joint_model_group)
+    , tip_link_(joint_model_group_->getLinkModels().back())
+  {
+  }
+
+  double distance(const ob::State *a, const ob::State *b) const override
+  {
+    moveit::core::RobotState sa(robot_model_);
+    moveit::core::RobotState sb(robot_model_);
+
+    sa.setToDefaultValues();
+    sa.setJointGroupPositions(joint_model_group_, a->as<RealVectorStateSpace::StateType>()->values);
+    sa.update();
+
+    sb.setToDefaultValues();
+    sb.setJointGroupPositions(joint_model_group_, b->as<RealVectorStateSpace::StateType>()->values);
+    sb.update();
+
+    const Eigen::Isometry3d &ta = sa.getGlobalLinkTransform(tip_link_);
+    const Eigen::Isometry3d &tb = sb.getGlobalLinkTransform(tip_link_);
+    return (ta.translation() - tb.translation()).norm();
+  }
+
+private:
+  const robot_model::RobotModelConstPtr robot_model_;
+  const moveit::core::JointModelGroup *joint_model_group_;
+  const moveit::core::LinkModel *tip_link_;
+};
 
 std::unique_ptr<Cdrm> Generator::generate(CancelRequestedCallback is_canceled_callback)
 {
@@ -58,7 +96,7 @@ std::unique_ptr<Cdrm> Generator::generate(CancelRequestedCallback is_canceled_ca
   // Create the CDRM and generate the roadmap.
   cdrm_.reset(new Cdrm(goal_->resolution));
 
-  ob::StateSpacePtr state_space(new ob::RealVectorStateSpace);
+  ob::StateSpacePtr state_space(new GeneratorStateSpace(robot_model_, jmg_));
 
   for (const auto *bounds : jmg_->getActiveJointModelsBounds())
     state_space->as<ob::RealVectorStateSpace>()->addDimension((*bounds)[0].min_position_, (*bounds)[0].max_position_);
@@ -169,6 +207,10 @@ EdgeDescriptor Generator::addEdge(const VertexDescriptor &a, const VertexDescrip
   if (!goal_->collide_edges)
     return edge;
 
+  // What we have already seen in this edge.
+  std::set<cdrm::Key> seen;
+
+  // The two states we are moving between.
   moveit::core::RobotState sa(robot_model_);
   moveit::core::RobotState sb(robot_model_);
 
@@ -180,45 +222,48 @@ EdgeDescriptor Generator::addEdge(const VertexDescriptor &a, const VertexDescrip
   sb.setJointGroupPositions(jmg_, cdrm_->roadmap_[b].q_);
   sb.update();
 
-  double max_displacement = 0;
-
-  // Get the maximum displacement for any link.
-  for (const auto *link : jmg_->getLinkModels())
+  const auto callback = [&, this](const Eigen::Vector3d &p, const Eigen::Vector3d &n)
   {
-    const Eigen::Isometry3d &ta = sa.getGlobalLinkTransform(link);
-    const Eigen::Isometry3d &tb = sb.getGlobalLinkTransform(link);
-
-    max_displacement = std::max(max_displacement, (ta.translation() - tb.translation()).norm());
-  }
-
-  auto steps = static_cast<unsigned int>(max_displacement / goal_->resolution);
-  auto state = sa;
-
-  const auto callback = [this, &edge](const Eigen::Vector3d &p, const Eigen::Vector3d &n) {
     auto key = cdrm_->pointToKey(p);
-    auto existing = cdrm_->colliding_edges_.equal_range(key);
-    bool found = false;
 
-    for (auto it = existing.first; it != existing.second; ++it) {
-      if (it->second == edge) {
-        found = true;
-        break;
-      }
-    }
+    if (seen.count(key))
+      return;
 
-    if (!found)
-    {
-      cdrm_->aabb_.extend(p);
-      cdrm_->colliding_edges_.insert({key, edge});
-    }
+    cdrm_->aabb_.extend(p);
+    cdrm_->colliding_edges_.insert({key, edge});
+
+    seen.insert(key);
   };
 
-  for (unsigned int i = 0; i <= steps; ++i)
-  {
-    sa.interpolate(sb, static_cast<double>(i) / steps, state, jmg_);
-    state.update();
+  // Voxelise the start and end.
+  voxelise(sa, link_models_, goal_->resolution, callback, origin_tf_inv_);
+  voxelise(sb, link_models_, goal_->resolution, callback, origin_tf_inv_);
 
-    voxelise(state, link_models_, goal_->resolution, callback, origin_tf_inv_);
+  // Recursively bisect until we see nothing new.
+  std::queue<std::pair<double, double>> queue;
+  queue.push(std::make_pair(0.0, 1.0));
+
+  moveit::core::RobotState mid_state = sa;
+
+  while (!queue.empty())
+  {
+    const auto front = queue.front();
+    const double mid = (front.first + front.second) / 2;
+    queue.pop();
+
+    sa.interpolate(sb, mid, mid_state, jmg_);
+    mid_state.update();
+
+    std::size_t before = seen.size();
+    voxelise(mid_state, link_models_, goal_->resolution, callback, origin_tf_inv_);
+    std::size_t after = seen.size();
+
+    // Did we see anything new?
+    if (before != after)
+    {
+      queue.push(std::make_pair(front.first, mid));
+      queue.push(std::make_pair(mid, front.second));
+    }
   }
 
   return edge;
