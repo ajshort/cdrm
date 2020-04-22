@@ -7,5 +7,5 @@ planner_configs:
       ar: example_quadruped_leg
       bl: example_quadruped_leg
       br: example_quadruped_leg
-    range: 0.05
+    range: 0.25
     goal_bias: 0.05

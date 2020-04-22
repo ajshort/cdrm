@@ -220,6 +220,8 @@ bool Planner::checkMotion(Node *from, Node *to)
   Eigen::Isometry3d body_tf = transformOmplToEigen(to->state_.get());
   to->surface_normals_ = from->surface_normals_;
 
+  return true;
+
   if (checkTransition(from->config_, body_tf, to))
   {
     state_.copyJointGroupPositions(context_->getGroup(), to->config_);

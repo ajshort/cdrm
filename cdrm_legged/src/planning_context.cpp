@@ -4,7 +4,6 @@
 #include <cdrm_legged/leg_model.h>
 #include <cdrm_legged/leg_planner.h>
 #include <cdrm_legged/motion_validator.h>
-#include <cdrm_legged/planner.h>
 #include <cdrm_legged/stability_checker.h>
 #include <cdrm_legged/state_validity_checker.h>
 
@@ -16,6 +15,7 @@
 #include <ompl/base/spaces/SE3StateSpace.h>
 #include <ompl/geometric/PathGeometric.h>
 #include <ompl/geometric/SimpleSetup.h>
+#include <ompl/geometric/planners/rrt/RRT.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <visualization_msgs/Marker.h>
 
@@ -62,16 +62,24 @@ bool PlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
   configure();
 
   const auto status = simple_setup_->solve(ptc_);
-  const auto *planner = static_cast<const Planner *>(simple_setup_->getPlanner().get());
 
   if (status)
   {
-    const auto rt = planner->getRobotTrajectory();
+    robot_trajectory::RobotTrajectoryPtr trajectory(new robot_trajectory::RobotTrajectory(getRobotModel(), group_));
 
-    LegPlanner intermediate_planner(this, planner);
-    intermediate_planner.planLegMotions(*rt);
+    robot_state::RobotState robot_state(getRobotModel());
+    robot_state.setToDefaultValues();
 
-    res.trajectory_.push_back(intermediate_planner.getMoveItTrajectory());
+    for (const auto *state : simple_setup_->getSolutionPath().getStates())
+    {
+      Eigen::Isometry3d body_tf = transformOmplToEigen(state);
+      robot_state.setJointPositions(getBodyJoint(), body_tf);
+      robot_state.update();
+
+      trajectory->addSuffixWayPoint(robot_state, 1.0);
+    }
+
+    res.trajectory_.push_back(trajectory);
     res.description_.push_back("plan");
     res.processing_time_.push_back(simple_setup_->getLastPlanComputationTime());
 
@@ -86,29 +94,29 @@ bool PlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
   }
 
   // Publish all contacts as dots.
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time();
-  marker.ns = "cdrm_legged";
-  marker.id = 0;
-  marker.type = visualization_msgs::Marker::SPHERE_LIST;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = 0.025;
-  marker.scale.y = 0.025;
-  marker.scale.z = 0.025;
-  marker.color.a = 1.0;
-  marker.color.r = 1.0;
+  // visualization_msgs::Marker marker;
+  // marker.header.frame_id = "map";
+  // marker.header.stamp = ros::Time();
+  // marker.ns = "cdrm_legged";
+  // marker.id = 0;
+  // marker.type = visualization_msgs::Marker::SPHERE_LIST;
+  // marker.action = visualization_msgs::Marker::ADD;
+  // marker.scale.x = 0.025;
+  // marker.scale.y = 0.025;
+  // marker.scale.z = 0.025;
+  // marker.color.a = 1.0;
+  // marker.color.r = 1.0;
 
-  for (const auto &contact : planner->getAllCreatedContacts())
-  {
-    geometry_msgs::Point point;
-    point.x = contact.x();
-    point.y = contact.y();
-    point.z = contact.z();
-    marker.points.push_back(point);
-  }
+  // for (const auto &contact : planner->getAllCreatedContacts())
+  // {
+  //   geometry_msgs::Point point;
+  //   point.x = contact.x();
+  //   point.y = contact.y();
+  //   point.z = contact.z();
+  //   marker.points.push_back(point);
+  // }
 
-  all_contacts_publisher_.publish(marker);
+  // all_contacts_publisher_.publish(marker);
 
   return status;
 }
@@ -196,7 +204,7 @@ void PlanningContext::configure()
   ptc_ = ob::timedPlannerTerminationCondition(req.allowed_planning_time);
 
   // Planner
-  ob::PlannerPtr planner(new Planner(this));
+  ob::PlannerPtr planner(new og::RRT(space_info_));
   simple_setup_->setPlanner(planner);
 
   for (const auto &param : planner_config_)
