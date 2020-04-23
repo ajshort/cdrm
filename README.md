@@ -34,6 +34,15 @@ Run the RViz demo with:
 roslaunch example_quadruped_moveit_config demo.launch
 ```
 
+Before beginning planning, you must generate a CDRM:
+
+```
+rosrun example_quadruped_moveit_config generate_leg_cdrm.py
+```
+
+You can then use the MoveIt RViz motion planning GUI to plan motions. The `rough_terrain.stl` mesh is provided as
+an example environment.
+
 ### Weld Planning
 
 To run the weld planning example, first generate the CDRM for the work cell:
