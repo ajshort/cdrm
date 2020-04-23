@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cdrm_legged/disjoint_sets.h>
+#include <cdrm_legged/leg_configs.h>
 #include <cdrm_legged/moveit_forward.h>
 
 #include <boost/dynamic_bitset.hpp>
@@ -14,27 +15,6 @@ namespace cdrm_legged
 {
 class LegModel;
 class PlanningContext;
-
-/**
- * Contains whether each CDRM configuration is collision free or a contact.
- */
-struct LegConfigs
-{
-  /**
-   * Valid CDRM configuration indices.
-   */
-  std::vector<unsigned int> contacts_;
-
-  /**
-   * Surface normals for each contact.
-   */
-  EigenSTL::vector_Vector3d normals_;
-
-  /**
-   * For each contact, a list of free configurations that can be reached through the CDRM.
-   */
-  std::vector<std::set<unsigned int>> reachable_;
-};
 
 /**
  * Generates leg configs for each leg given a body pose.
