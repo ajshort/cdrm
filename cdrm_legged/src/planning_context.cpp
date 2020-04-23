@@ -62,25 +62,64 @@ bool PlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
 {
   configure();
 
+  moveit::core::RobotState robot_state(getRobotModel());
+  robot_state.setToDefaultValues();
+
   const auto status = simple_setup_->solve(ptc_);
   const auto *motion_validator = static_cast<const MotionValidator *>(space_info_->getMotionValidator().get());
 
   if (status)
   {
+    // We start at the end, and then go back to the start, getting the most similar robot state at each position.
+    const auto &solution_states = simple_setup_->getSolutionPath().getStates();
+
+    std::vector<moveit::core::RobotState> robot_states;
+
+    Eigen::Isometry3d back_tf = transformOmplToEigen(solution_states.back());
+    robot_states.push_back(motion_validator->getValidStates(back_tf).front());
+
+    for (int i = solution_states.size() - 2; i >= 0; --i)
+    {
+      Eigen::Isometry3d body_tf = transformOmplToEigen(solution_states[i]);
+
+      const auto &comparison_state = robot_states.back();
+      const auto &candidates = motion_validator->getValidStates(body_tf);
+
+      double best = std::numeric_limits<double>::max();
+      unsigned int best_index =  0;
+
+      for (std::size_t j = 0; j < candidates.size(); ++j)
+      {
+        const auto &candidate_state = candidates[j];
+        double candidate_dist = 0;
+
+        for (const auto &leg_model : leg_models_)
+        {
+          double qa[3];
+          double qb[3];
+
+          candidate_state.copyJointGroupPositions(leg_model.jmg_, qa);
+          comparison_state.copyJointGroupPositions(leg_model.jmg_, qb);
+
+          candidate_dist += leg_model.jmg_->distance(qa, qb);
+        }
+
+        if (candidate_dist < best)
+        {
+          best = candidate_dist;
+          best_index = j;
+        }
+      }
+
+      robot_states.push_back(candidates[best_index]);
+    }
+
+    std::reverse(robot_states.begin(), robot_states.end());
+
     robot_trajectory::RobotTrajectoryPtr trajectory(new robot_trajectory::RobotTrajectory(getRobotModel(), group_));
 
-    robot_state::RobotState robot_state(getRobotModel());
-    robot_state.setToDefaultValues();
-
-    for (const auto *state : simple_setup_->getSolutionPath().getStates())
-    {
-      Eigen::Isometry3d body_tf = transformOmplToEigen(state);
-      robot_state.setJointPositions(getBodyJoint(), body_tf);
-      robot_state.update();
-
-      const auto &valid_states = motion_validator->getValidStates(body_tf);
-      trajectory->addSuffixWayPoint(valid_states[0], 1.0);
-    }
+    for (std::size_t i = 0; i < robot_states.size(); ++i)
+      trajectory->addSuffixWayPoint(robot_states[i], i == 0 ? 0 : 1);
 
     res.trajectory_.push_back(trajectory);
     res.description_.push_back("plan");
