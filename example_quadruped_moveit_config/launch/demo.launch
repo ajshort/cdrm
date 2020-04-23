@@ -19,7 +19,7 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true"
         output="screen" />
 
-  <include file="$(find example_quadruped_moveit_config)/launch/move_group_demo.launch" />
+  <include file="$(find example_quadruped_moveit_config)/launch/move_group_demo.launch">
     <arg name="debug" value="$(arg debug)" />
   </include>
 

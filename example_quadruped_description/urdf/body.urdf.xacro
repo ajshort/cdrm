@@ -9,11 +9,6 @@
       <collision>
         <geometry><mesh filename="package://example_quadruped_description/meshes/body_link.stl" /></geometry>
       </collision>
-      <inertial>
-        <origin xyz="-7.0772E-05 0.022175 0.00069238" />
-        <mass value="0.86768" />
-        <inertia ixx="0.004313" ixy="7.3571E-06" ixz="-4.1802E-06" iyy="0.0063166" iyz="1.4712E-05" izz="0.0027301" />
-      </inertial>
     </link>
 
     <joint name="body_joint" type="fixed">

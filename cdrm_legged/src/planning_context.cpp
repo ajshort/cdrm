@@ -63,6 +63,7 @@ bool PlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
   configure();
 
   const auto status = simple_setup_->solve(ptc_);
+  const auto *motion_validator = static_cast<const MotionValidator *>(space_info_->getMotionValidator().get());
 
   if (status)
   {
@@ -77,7 +78,8 @@ bool PlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
       robot_state.setJointPositions(getBodyJoint(), body_tf);
       robot_state.update();
 
-      trajectory->addSuffixWayPoint(robot_state, 1.0);
+      const auto &valid_states = motion_validator->getValidStates(body_tf);
+      trajectory->addSuffixWayPoint(valid_states[0], 1.0);
     }
 
     res.trajectory_.push_back(trajectory);
