@@ -59,7 +59,7 @@
       <xacro:insert_block name="origin" />
       <axis xyz="0 0 1" />
 
-      <limit lower="-1.8326" upper="1.8326" effort="3.1" velocity="7" />
+      <limit lower="-1.0472" upper="1.0472" effort="3.1" velocity="7" />
     </joint>
 
     <joint name="${name}_femur_joint" type="revolute">
