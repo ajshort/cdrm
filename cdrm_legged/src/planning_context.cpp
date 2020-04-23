@@ -1,6 +1,7 @@
 #include <cdrm_legged/planning_context.h>
 
 #include <cdrm_legged/conversions.h>
+#include <cdrm_legged/leg_config_generator.h>
 #include <cdrm_legged/leg_model.h>
 #include <cdrm_legged/leg_planner.h>
 #include <cdrm_legged/motion_validator.h>
@@ -161,6 +162,24 @@ std::size_t PlanningContext::getNumLegs() const
 void PlanningContext::addLegModel(const LegModel &leg_model)
 {
   leg_models_.push_back(leg_model);
+}
+
+const std::vector<LegConfigs> &PlanningContext::generateLegConfigs(const Eigen::Isometry3d &body_tf)
+{
+  if (!leg_config_generator_)
+    leg_config_generator_.reset(new LegConfigGenerator(getPlanningScene()));
+
+  auto &leg_configs = generated_leg_configs_[body_tf];
+
+  if (leg_configs.empty())
+  {
+    leg_configs.resize(leg_models_.size());
+
+    for (std::size_t i = 0; i < leg_models_.size(); ++i)
+      leg_configs[i] = leg_config_generator_->generateLegConfigs(body_tf, leg_models_[i]);
+  }
+
+  return leg_configs;
 }
 
 void PlanningContext::configure()

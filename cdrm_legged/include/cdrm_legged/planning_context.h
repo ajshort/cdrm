@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cdrm_legged/leg_configs.h>
 #include <cdrm_legged/moveit_forward.h>
+#include <cdrm_legged/transform_map.h>
 #include <cdrm_legged/ompl_forward.h>
 
 #include <Eigen/Core>
@@ -11,6 +13,7 @@
 #include <ros/node_handle.h>
 #include <ros/publisher.h>
 
+#include <memory>
 #include <map>
 #include <string>
 #include <vector>
@@ -22,6 +25,7 @@ class Cdrm;
 
 namespace cdrm_legged
 {
+class LegConfigGenerator;
 class LegModel;
 class StabilityChecker;
 
@@ -80,6 +84,11 @@ public:
 
   void addLegModel(const LegModel &leg_model);
 
+  /**
+   * Generates leg configs for a body transform, caching them.
+   */
+  const std::vector<LegConfigs> &generateLegConfigs(const Eigen::Isometry3d &body_tf);
+
   const StabilityChecker *getStabilityChecker() const
   {
     return stability_checker_.get();
@@ -124,5 +133,9 @@ private:
 
   ros::NodeHandle node_handle_;
   ros::Publisher all_contacts_publisher_;
+
+  std::unique_ptr<LegConfigGenerator> leg_config_generator_;
+
+  unordered_map_Isometry3d<std::vector<LegConfigs>> generated_leg_configs_;
 };
 }

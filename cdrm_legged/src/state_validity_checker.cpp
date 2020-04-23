@@ -11,12 +11,11 @@
 
 namespace cdrm_legged
 {
-StateValidityChecker::StateValidityChecker(const PlanningContext *context)
+StateValidityChecker::StateValidityChecker(PlanningContext *context)
   : ompl::base::StateValidityChecker(context->getSpaceInformation())
   , context_(context)
   , body_acm_(context_->getPlanningScene()->getAllowedCollisionMatrix())
   , state_(context_->getRobotModel())
-  , leg_config_generator_(new LegConfigGenerator(context->getPlanningScene()))
 {
   // Set up the ACM to only check collisions with body links.
   const auto *body_link = context_->getBodyJoint()->getChildLinkModel();
@@ -73,16 +72,7 @@ bool StateValidityChecker::isBodyInCollision() const
 
 bool StateValidityChecker::allLegsHaveConfigs(const Eigen::Isometry3d &body_tf) const
 {
-  const auto &leg_models = context_->getLegModels();
-  auto &leg_configs = state_leg_configs_[body_tf];
-
-  if (leg_configs.empty())
-  {
-    leg_configs.resize(leg_models.size());
-
-    for (std::size_t i = 0; i < leg_models.size(); ++i)
-      leg_configs[i] = leg_config_generator_->generateLegConfigs(body_tf, leg_models[i]);
-  }
+  const auto &leg_configs = context_->generateLegConfigs(body_tf);
 
   return std::all_of(leg_configs.begin(), leg_configs.end(), [](const LegConfigs &lc)
   {
