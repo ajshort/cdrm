@@ -1,5 +1,7 @@
 #include <cdrm_legged/leg_model.h>
 
+#include <cdrm/cdrm.h>
+
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_model/joint_model_group.h>
 #include <moveit/robot_state/robot_state.h>
@@ -26,6 +28,11 @@ Eigen::Isometry3d LegModel::getTipTransform(const Eigen::VectorXd &q) const
   state_.update();
 
   return tf_.inverse() * state_.getGlobalLinkTransform(tip_link_);
+}
+
+Eigen::Isometry3d LegModel::getTipTransform(unsigned int vertex) const
+{
+  return getTipTransform(cdrm_->getVertexConfig(vertex));
 }
 
 Eigen::Isometry3d LegModel::getLegOriginTf(const moveit::core::RobotModelConstPtr &robot_model) const

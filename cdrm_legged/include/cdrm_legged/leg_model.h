@@ -29,6 +29,7 @@ public:
    * Gets the position of the foot tip relative to body given a configuration.
    */
   Eigen::Isometry3d getTipTransform(const Eigen::VectorXd &q) const;
+  Eigen::Isometry3d getTipTransform(unsigned int) const;
 
   const moveit::core::JointModelGroup *jmg_;
   const moveit::core::LinkModel *tip_link_;
