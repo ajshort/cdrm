@@ -4,6 +4,7 @@
 #include <geometric_shapes/shapes.h>
 #include <moveit/robot_model/joint_model_group.h>
 #include <moveit/robot_state/robot_state.h>
+#include <swri_profiler/profiler.h>
 #include <ros/console.h>
 
 namespace cdrm
@@ -137,6 +138,8 @@ static bool isTriangleCubeIntersect(Eigen::Matrix3d tri, const Eigen::Vector3d &
 void voxelise(const shapes::Mesh &mesh, double resolution, const VoxelCallback &callback, const Eigen::Isometry3d &tf,
               const Eigen::Vector3d *min_bound, const Eigen::Vector3d *max_bound)
 {
+  SWRI_PROFILE("voxelise_mesh");
+
   using VectorMap = Eigen::Map<Eigen::Vector3d>;
 
   std::set<Key> seen;
@@ -204,7 +207,11 @@ void voxelise(const shapes::Mesh &mesh, double resolution, const VoxelCallback &
 
           if (isTriangleCubeIntersect(tri, centre, resolution))
           {
-            callback(centre, VectorMap(mesh.triangle_normals + 3 * triangle));
+            {
+              SWRI_PROFILE("voxelise_mesh_callback");
+              callback(centre, VectorMap(mesh.triangle_normals + 3 * triangle));
+            }
+
             seen.insert(key);
           }
         }
@@ -217,6 +224,8 @@ void voxelise(const moveit::core::RobotState &state, const std::vector<const mov
               double resolution, const VoxelCallback &callback, const Eigen::Isometry3d &tf,
               const Eigen::Vector3d *min_bound, const Eigen::Vector3d *max_bound)
 {
+  SWRI_PROFILE("voxelise_state");
+
   for (const auto *link : links)
   {
     const Eigen::Isometry3d &link_tf = state.getGlobalLinkTransform(link);

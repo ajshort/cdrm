@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   moveit_ros_planning
   roscpp
+  swri_profiler
 )
 find_package(ompl REQUIRED)
 

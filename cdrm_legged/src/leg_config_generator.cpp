@@ -10,6 +10,7 @@
 #include <geometric_shapes/shapes.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <ros/console.h>
+#include <swri_profiler/profiler.h>
 
 #include <queue>
 
@@ -25,8 +26,7 @@ LegConfigGenerator::LegConfigGenerator(const planning_scene::PlanningSceneConstP
 
 LegConfigs LegConfigGenerator::generateLegConfigs(const Eigen::Isometry3d &body_tf, const LegModel &leg) const
 {
-  using NormalMap = std::map<int, Eigen::Vector3d, std::less<int>,
-                             Eigen::aligned_allocator<std::pair<const int, Eigen::Vector3d>>>;
+  SWRI_PROFILE("generate_leg_configs");
 
   const auto *cdrm = leg.cdrm_;
 

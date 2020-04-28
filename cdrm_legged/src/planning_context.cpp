@@ -18,6 +18,7 @@
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/geometric/planners/rrt/RRT.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
+#include <swri_profiler/profiler.h>
 #include <visualization_msgs/Marker.h>
 
 namespace mc = moveit::core;
@@ -60,6 +61,8 @@ bool PlanningContext::solve(planning_interface::MotionPlanResponse &res)
 
 bool PlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
 {
+  SWRI_PROFILE("solve");
+
   configure();
 
   moveit::core::RobotState robot_state(getRobotModel());
