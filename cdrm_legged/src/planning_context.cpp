@@ -89,7 +89,7 @@ bool PlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
       const auto &candidates = motion_validator->getValidStates(body_tf);
 
       double best = std::numeric_limits<double>::max();
-      unsigned int best_index =  0;
+      int best_index = -1;
 
       for (std::size_t j = 0; j < candidates.size(); ++j)
       {
@@ -114,7 +114,9 @@ bool PlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
         }
       }
 
-      robot_states.push_back(candidates[best_index]);
+      // Sometimes we don't generate a valid foothold for the start and end state, in this case just assume it's valid.
+      if (best_index != -1)
+        robot_states.push_back(candidates[best_index]);
     }
 
     std::reverse(robot_states.begin(), robot_states.end());
