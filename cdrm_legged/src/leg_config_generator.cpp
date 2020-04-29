@@ -61,8 +61,11 @@ LegConfigs LegConfigGenerator::generateLegConfigs(const Eigen::Isometry3d &body_
       colliding_edges.insert(it->second);
   };
 
-  Eigen::Vector3d min = leg_tf.translation().array() - leg.cdrm_->max_contact_distance_;
-  Eigen::Vector3d max = leg_tf.translation().array() + leg.cdrm_->max_contact_distance_;
+  Eigen::AlignedBox3d aabb;
+  aabb.extend(leg_tf * leg.cdrm_->aabb_.min());
+  aabb.extend(leg_tf * leg.cdrm_->aabb_.max());
+  Eigen::Vector3d min = aabb.min();
+  Eigen::Vector3d max = aabb.max();
 
   for (const auto &object : *(planning_scene_->getWorld()))
   {
