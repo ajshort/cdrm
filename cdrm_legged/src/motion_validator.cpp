@@ -133,13 +133,13 @@ bool MotionValidator::generateValidStates(const Eigen::Isometry3d &body_tf) cons
 
     robot_state.update();
 
-    // Contacts contacts;
+    Contacts contacts;
 
-    // for (std::size_t leg = 0; leg < context_->getNumLegs(); ++leg)
-    //   contacts.contacts_.push_back(leg);
+    for (std::size_t leg = 0; leg < context_->getNumLegs(); ++leg)
+      contacts.contacts_.push_back(leg);
 
-    // if (!context_->getStabilityChecker()->isStable(robot_state, contacts))
-    //   continue;
+    if (!context_->getStabilityChecker()->isStable(robot_state, contacts))
+      continue;
 
     collision_detection::CollisionRequest req;
     collision_detection::CollisionResult res;
